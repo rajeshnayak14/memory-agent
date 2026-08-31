@@ -1,0 +1,85 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Every token holds raw "R G B" channels, not a hex string — Tailwind's
+   opacity modifiers (bg-primary/40, border-danger/30, ...) only work when
+   the color function can inject an alpha channel itself, which requires
+   `rgb(var(--x) / <alpha-value>)` in tailwind.config.js and channel-only
+   values here. */
+:root {
+  --bg-page: 245 243 237;
+  --bg-surface: 251 250 246;
+  --bg-surface-hover: 241 243 240;
+  --bg-surface-subtle: 245 246 242;
+  --border-default: 223 227 223;
+  --border-strong: 207 215 209;
+  --text-primary: 32 37 34;
+  --text-secondary: 78 86 81;
+  --text-muted: 115 122 117;
+  --text-faint: 138 145 140;
+  --accent: 31 77 59;
+  --accent-hover: 23 60 46;
+  --accent-subtle-bg: 232 238 233;
+  --accent-subtle-border: 213 223 216;
+  --danger: 160 82 82;
+  --danger-subtle-bg: 255 240 240;
+  --danger-border: 217 186 186;
+  --success: 94 139 112;
+  --warn: 192 138 62;
+  --primary-hover: 52 58 54;
+  --border-focus: 110 141 125;
+}
+
+:root.dark {
+  --bg-page: 20 23 21;
+  --bg-surface: 27 31 28;
+  --bg-surface-hover: 35 40 35;
+  --bg-surface-subtle: 31 36 32;
+  --border-default: 42 47 43;
+  --border-strong: 58 65 60;
+  --text-primary: 237 241 236;
+  --text-secondary: 183 189 182;
+  --text-muted: 139 147 140;
+  --text-faint: 102 110 105;
+  --accent: 78 163 127;
+  --accent-hover: 99 181 146;
+  --accent-subtle-bg: 28 43 35;
+  --accent-subtle-border: 47 74 60;
+  --danger: 211 138 138;
+  --danger-subtle-bg: 46 28 28;
+  --danger-border: 74 46 46;
+  --success: 111 174 139;
+  --warn: 214 163 85;
+  --primary-hover: 42 48 44;
+  --border-focus: 127 163 143;
+}
+
+@layer base {
+  html {
+    @apply antialiased;
+  }
+
+  body {
+    @apply bg-paper text-ink-900 font-sans;
+  }
+
+  ::selection {
+    @apply bg-accent-subtle;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: theme("colors.border.strong");
+    border-radius: 3px;
+  }
+}

@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: memory-agent-api
+    runtime: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    # Migrations are idempotent (checked against existing tables/columns
+    # before creating anything), so running them on every boot is safe and
+    # guarantees the schema is current without a separate manual step.
+    startCommand: "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.10
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET_KEY
+        sync: false
+      - key: FRONTEND_URL
+        sync: false

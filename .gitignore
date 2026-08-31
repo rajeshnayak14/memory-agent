@@ -1,0 +1,28 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Environment secrets
+.env
+.env.local
+frontend/.env.local
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Editor/OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# One-off source asset (derived logo.png/favicon.png are what the app
+# actually uses, already in frontend/public/) — not needed in the repo.
+/image.png
+
+# Stray lockfile with no matching root package.json — the real frontend
+# lockfile lives in frontend/package-lock.json.
+/package-lock.json
