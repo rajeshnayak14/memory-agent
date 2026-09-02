@@ -25,11 +25,13 @@ from app.tools.expense_tools import (
 # Pinning an explicit budget keeps the reasoning but guarantees the model
 # actually emits a tool call or an answer. 1024 was sufficient at 7 tools;
 # growing to 10 tools + a longer prompt reintroduced occasional empty
-# responses (caught via d:/tmp/probe_chat_v2.py), so this is bumped to 2048 —
-# re-verify with that probe again before adding further tools/prompt text.
+# responses, bumped to 2048; the balance/category-breakdown prompt section
+# (10229 chars) pushed it back to a ~10% empty-response rate in
+# d:/tmp/probe_thinking.py, so this is bumped to 3072 — re-verify with that
+# probe again before adding further tools/prompt text.
 model = init_chat_model(
     "google_genai:gemini-2.5-flash",
-    thinking_budget=2048,
+    thinking_budget=3072,
 )
 
 
@@ -352,6 +354,25 @@ agent = create_react_agent(
 
     Never calculate the current balance from remembered
     conversation messages.
+
+    -----------------------------------------------------
+
+    There is no such thing as a per-category budget or
+    per-category balance — a budget is one single overall
+    amount for a period, never split by category.
+
+    If the user asks for "balance by category" or otherwise
+    combines a balance/remaining word with a category
+    breakdown (e.g. "current balance by category", "how
+    much do I have left, broken down by category"):
+
+    Call BOTH budget_manager(action="status") AND
+    get_expense_breakdown, then combine both results into
+    one reply: state the overall remaining balance first,
+    then the category breakdown of what has been spent.
+
+    Do not answer with only the category breakdown in that
+    case — the user explicitly asked about balance too.
 
     =====================================================
     BUDGET TOOL RULES

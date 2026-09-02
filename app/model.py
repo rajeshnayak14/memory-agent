@@ -38,6 +38,13 @@ class User(Base):
         nullable=False,
     )
 
+    is_admin: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        server_default="false",
+        nullable=False,
+    )
+
     preferred_currency: Mapped[str] = mapped_column(
         String(3),
         default="INR",
@@ -481,4 +488,49 @@ class Goal(Base):
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
         nullable=False,
+    )
+
+
+class EmailOtp(Base):
+    __tablename__ = "email_otps"
+
+    id: Mapped[int] = mapped_column(
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+
+    code_hash: Mapped[str] = mapped_column(
+        String(64),
+        nullable=False,
+    )
+
+    attempts: Mapped[int] = mapped_column(
+        default=0,
+        server_default="0",
+        nullable=False,
+    )
+
+    consumed: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        server_default="false",
+        nullable=False,
+    )
+
+    expires_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+        index=True,
     )

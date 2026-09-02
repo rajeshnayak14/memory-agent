@@ -38,20 +38,20 @@ export function ToastProvider({ children }) {
             role="status"
             className={`flex items-start gap-2.5 rounded border px-3.5 py-3 shadow-raised ${
               toast.type === "error"
-                ? "border-danger-500/30 bg-white text-ink-900"
-                : "border-success-500/30 bg-white text-ink-900"
+                ? "border-danger-border bg-surface text-primary"
+                : "border-accent-border bg-surface text-primary"
             }`}
           >
             {toast.type === "error" ? (
-              <AlertTriangle size={17} className="mt-0.5 shrink-0 text-danger-500" strokeWidth={2} />
+              <AlertTriangle size={17} className="mt-0.5 shrink-0 text-danger" strokeWidth={2} />
             ) : (
-              <CheckCircle2 size={17} className="mt-0.5 shrink-0 text-success-500" strokeWidth={2} />
+              <CheckCircle2 size={17} className="mt-0.5 shrink-0 text-success" strokeWidth={2} />
             )}
             <p className="flex-1 text-sm leading-snug">{toast.message}</p>
             <button
               type="button"
               onClick={() => dismiss(toast.id)}
-              className="shrink-0 text-ink-300 transition hover:text-ink-700"
+              className="shrink-0 text-faint transition hover:text-primary"
               aria-label="Dismiss notification"
             >
               <X size={15} />

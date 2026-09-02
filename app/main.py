@@ -15,6 +15,7 @@ from app.routes.recurring_routes import router as recurring_router
 from app.routes.notification_routes import router as notification_router
 from app.routes.category_routes import router as category_router
 from app.routes.goal_routes import router as goal_router
+from app.routes.admin_routes import router as admin_router
 
 from app.exceptions import (
     AuthenticationError,
@@ -22,6 +23,7 @@ from app.exceptions import (
     UserNotFoundError,
     DatabaseError,
     ResourceNotFoundError,
+    EmailDeliveryError,
 )
 
 from app.exception_handlers import (
@@ -30,6 +32,7 @@ from app.exception_handlers import (
     user_not_found_error_handler,
     database_error_handler,
     resource_not_found_handler,
+    email_delivery_error_handler,
 )
 
 from app.logging_config import setup_logging
@@ -101,6 +104,11 @@ app.add_exception_handler(
     resource_not_found_handler,
 )
 
+app.add_exception_handler(
+    EmailDeliveryError,
+    email_delivery_error_handler,
+)
+
 
 # Request logging middleware
 @app.middleware("http")
@@ -137,6 +145,7 @@ app.include_router(recurring_router)
 app.include_router(notification_router)
 app.include_router(category_router)
 app.include_router(goal_router)
+app.include_router(admin_router)
 
 
 @app.get("/health")

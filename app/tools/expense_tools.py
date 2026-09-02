@@ -246,6 +246,12 @@ def add_expense(
     - amount=300, category="food",
       description="lunch", date="today"
 
+    date only accepts an actual date ("today", "yesterday", "2026-09-01",
+    "August 25") — never a vague relative period like "this week" or
+    "this month" (those aren't parseable and will fail). If the user
+    gives a vague period like that without naming a specific day, just
+    use "today".
+
     If currency is not given, the user's preferred currency is used.
     """
 
@@ -688,19 +694,23 @@ def get_expense_daily_breakdown(
 # ============================================================
 
 
-def _active_budgets(db, user_id, thread_id):
+def _active_budgets(db, user_id, thread_id, all_threads=False):
     user_id = int(user_id)
 
     now = datetime.now(timezone.utc)
 
+    filters = [
+        Budget.user_id == user_id,
+        Budget.period_start <= now,
+        Budget.period_end > now,
+    ]
+
+    if not all_threads:
+        filters.append(Budget.thread_id == thread_id)
+
     return (
         db.query(Budget)
-        .filter(
-            Budget.user_id == user_id,
-            Budget.thread_id == thread_id,
-            Budget.period_start <= now,
-            Budget.period_end > now,
-        )
+        .filter(*filters)
         .order_by(
             Budget.created_at.desc(),
             Budget.id.desc(),
@@ -738,16 +748,22 @@ def _find_budget(
     thread_id: str,
     start: date,
     end_exclusive: date,
+    all_threads: bool = False,
 ):
     user_id = int(user_id)
+
+    filters = [
+        Budget.user_id == user_id,
+        Budget.period_start == to_datetime_start(start),
+        Budget.period_end == to_datetime_start(end_exclusive),
+    ]
+
+    if not all_threads:
+        filters.append(Budget.thread_id == thread_id)
+
     return (
         db.query(Budget)
-        .filter(
-            Budget.user_id == user_id,
-            Budget.thread_id == thread_id,
-            Budget.period_start == to_datetime_start(start),
-            Budget.period_end == to_datetime_start(end_exclusive),
-        )
+        .filter(*filters)
         .order_by(Budget.created_at.desc(), Budget.id.desc())
         .first()
     )
@@ -788,11 +804,16 @@ def resolve_budget_target(
     thread_id: str,
     start_date: str | None = None,
     end_date: str | None = None,
+    all_threads: bool = False,
 ):
     """Resolve the budget budget_manager's status/increase/decrease/delete
     actions target: the exact period if dates are given, otherwise the
     currently active budget. Shared with chat_routes.py so the structured
     chat card re-resolves the byte-identical target the tool used.
+
+    `all_threads` widens the search to every conversation this user has
+    (not just `thread_id`) — used only for an explicit "check my budget
+    from memory"-style request; the default stays scoped to this thread.
 
     Returns (target, start, end, explicit_period). `target` is None if no
     matching budget exists; `start`/`end` are None unless an explicit
@@ -813,31 +834,33 @@ def resolve_budget_target(
         end = end_inclusive + timedelta(days=1)
 
         return (
-            _find_budget(db, user_id, thread_id, start, end),
+            _find_budget(db, user_id, thread_id, start, end, all_threads),
             start,
             end,
             explicit_period,
         )
 
-    active = _active_budgets(db, user_id, thread_id)
+    active = _active_budgets(db, user_id, thread_id, all_threads)
 
     return (active[0] if active else None), None, None, explicit_period
 
 
-def _budget_spent(db, user_id: int, thread_id: str, budget: Budget) -> float:
+def _budget_spent(
+    db, user_id: int, thread_id: str, budget: Budget, all_threads: bool = False,
+) -> float:
     user_id = int(user_id)
 
-    expenses = (
-        db.query(Expense)
-        .filter(
-            Expense.user_id == user_id,
-            Expense.thread_id == thread_id,
-            Expense.currency == budget.currency,
-            Expense.expense_date >= budget.period_start,
-            Expense.expense_date < budget.period_end,
-        )
-        .all()
-    )
+    filters = [
+        Expense.user_id == user_id,
+        Expense.currency == budget.currency,
+        Expense.expense_date >= budget.period_start,
+        Expense.expense_date < budget.period_end,
+    ]
+
+    if not all_threads:
+        filters.append(Expense.thread_id == thread_id)
+
+    expenses = db.query(Expense).filter(*filters).all()
     return sum(float(e.amount) for e in expenses)
 
 
@@ -879,6 +902,7 @@ def budget_manager(
     start_date: str | None = None,
     end_date: str | None = None,
     currency: str | None = None,
+    search_all_conversations: bool = False,
 ) -> str:
     """
     Manage budgets in the current conversation thread.
@@ -893,12 +917,25 @@ def budget_manager(
     - delete
 
     If status/increase/decrease/delete has no dates, the currently
-    active budget for the current thread is targeted.
+    active budget for the current thread is targeted — this already
+    covers "this month"/"right now"/"currently" style requests, so do
+    NOT pass phrases like "this month" as start_date/end_date (they
+    aren't parseable dates and will fail); just omit both instead.
 
-    If dates are supplied, the exact budget period is targeted.
+    If dates are supplied, the exact budget period is targeted. Only
+    pass actual dates here (e.g. "2026-09-01", "today"), never relative
+    phrases like "this month" or "this week".
 
     For set/update, if currency is not given, the user's preferred
     currency is used.
+
+    search_all_conversations: only set this True for "status" or "list"
+    when the user EXPLICITLY asks to check across their other
+    conversations or "from memory" (e.g. "what's my budget from memory",
+    "check my budget across all my chats"). Leave it False by default —
+    a plain "what's my budget" stays scoped to this conversation only.
+    Has no effect on set/update/increase/decrease/delete, which always
+    target this conversation's own budget.
     """
 
     user_id, thread_id = get_current_thread()
@@ -946,20 +983,26 @@ def budget_manager(
             ):
                 return "Invalid budget date range."
 
+        # Only status/list honor a cross-conversation search — mutating
+        # actions always stay scoped to this conversation's own budget.
+        all_threads = search_all_conversations and action in {"status", "list"}
+
         target, start, end, explicit_period = resolve_budget_target(
-            db, user_id, thread_id, start_date, end_date,
+            db, user_id, thread_id, start_date, end_date, all_threads,
         )
 
         # ---------------------------------------------------------
         # LIST
         # ---------------------------------------------------------
         if action == "list":
+            budget_filters = [Budget.user_id == user_id]
+
+            if not all_threads:
+                budget_filters.append(Budget.thread_id == thread_id)
+
             budgets = (
                 db.query(Budget)
-                .filter(
-                    Budget.user_id == user_id,
-                    Budget.thread_id == thread_id,
-                )
+                .filter(*budget_filters)
                 .order_by(
                     Budget.period_start.desc(),
                     Budget.id.desc(),
@@ -968,7 +1011,11 @@ def budget_manager(
             )
 
             if not budgets:
-                return "No budgets have been set in this conversation."
+                return (
+                    "No budgets have been set "
+                    + ("across any of your conversations." if all_threads
+                       else "in this conversation.")
+                )
 
             lines = []
 
@@ -978,6 +1025,7 @@ def budget_manager(
                     user_id,
                     thread_id,
                     budget,
+                    all_threads,
                 )
 
                 remaining = float(budget.amount) - spent
@@ -1003,7 +1051,8 @@ def budget_manager(
 
                 return (
                     "No active budget has been set "
-                    "in this conversation."
+                    + ("across any of your conversations." if all_threads
+                       else "in this conversation.")
                 )
 
             spent = _budget_spent(
@@ -1011,6 +1060,7 @@ def budget_manager(
                 user_id,
                 thread_id,
                 target,
+                all_threads,
             )
 
             return _budget_text(
@@ -1160,6 +1210,10 @@ def manage_expense(
     Actions:
     - update
     - delete
+
+    date only accepts an actual date ("today", "yesterday", "2026-09-01",
+    "August 25") — never a vague relative period like "this week" or
+    "this month".
     """
 
     user_id, thread_id = get_current_thread()
@@ -1289,6 +1343,10 @@ def manage_recurring_expense(
 
     If pause/resume/delete has no recurring_id, the most recently created
     active recurring expense in this thread is targeted.
+
+    start_date only accepts an actual date ("today", "2026-09-01",
+    "August 25") — never a vague relative period like "this week" or
+    "this month". Omit it to start today.
     """
 
     user_id, thread_id = get_current_thread()
@@ -1454,6 +1512,10 @@ def manage_recurring_budget(
 
     If pause/resume/delete has no recurring_id, the most recently created
     active recurring budget in this thread is targeted.
+
+    start_date only accepts an actual date ("today", "2026-09-01",
+    "August 25") — never a vague relative period like "this week" or
+    "this month". Omit it to start today.
     """
 
     user_id, thread_id = get_current_thread()

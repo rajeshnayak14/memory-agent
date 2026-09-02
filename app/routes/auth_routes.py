@@ -1,9 +1,10 @@
 import logging
+import os
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 from argon2 import PasswordHasher
@@ -15,6 +16,7 @@ from app.auth import (
     ALGORITHM,
     create_access_token,
     create_refresh_token,
+    create_mfa_token,
     verify_token,
 )
 from app.database import get_db
@@ -26,13 +28,20 @@ from app.token_service import (
 from app.exceptions import (
     AuthenticationError,
     DatabaseError,
+    EmailDeliveryError,
 )
 from app.schemas.auth_schemas import (
     TokenResponse,
     AccessTokenResponse,
     RegisterResponse,
     LogoutResponse,
+    LoginResponse,
+    VerifyOtpRequest,
+    ResendOtpRequest,
+    MessageResponse,
 )
+from app.services.otp import create_and_send_otp, verify_otp_code
+from app.validators import validate_password_strength
 
 
 logger = logging.getLogger(__name__)
@@ -44,10 +53,34 @@ router = APIRouter(
 password_hasher = PasswordHasher()
 
 
+def _promote_if_designated_admin(user: User, db: Session) -> None:
+    """Grant is_admin the first time a designated email registers or logs
+    in — set via the ADMIN_EMAILS env var (comma-separated), so a fresh
+    deploy never needs a manual DB edit to get its first admin. Safe to
+    call on every login: it's a no-op once already granted, and only ever
+    promotes, never demotes (removing an email from the env var doesn't
+    revoke access — do that from the admin panel itself).
+    """
+    designated = {
+        email.strip().lower()
+        for email in os.getenv("ADMIN_EMAILS", "").split(",")
+        if email.strip()
+    }
+
+    if user.email and user.email.lower() in designated and not user.is_admin:
+        user.is_admin = True
+        db.commit()
+
+
 class RegisterRequest(BaseModel):
     username: str = Field(min_length=3, max_length=100)
     email: EmailStr
-    password: str = Field(min_length=3, max_length=100)
+    password: str = Field(min_length=8, max_length=100)
+
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, value: str) -> str:
+        return validate_password_strength(value)
 
 
 @router.post("/register", response_model=RegisterResponse)
@@ -81,6 +114,8 @@ def register(
         db.commit()
         db.refresh(user)
 
+        _promote_if_designated_admin(user, db)
+
     except HTTPException:
         raise
 
@@ -100,7 +135,7 @@ def register(
     }
 
 
-@router.post("/login", response_model=TokenResponse)
+@router.post("/login", response_model=LoginResponse)
 def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db),
@@ -147,6 +182,33 @@ def login(
             detail="User account is inactive",
         )
 
+    _promote_if_designated_admin(user, db)
+
+    # Every account with an email on file gets an OTP challenge on every
+    # login — mandatory, not opt-in. An account with no email (only
+    # possible for pre-existing rows from before email was required) has
+    # nowhere to send a code, so it falls through to normal password-only
+    # login rather than being permanently locked out.
+    if user.email:
+        try:
+            create_and_send_otp(db, user)
+        except TimeoutError:
+            # A code was already sent moments ago — fine, let the user use
+            # that one rather than erroring on this step of login.
+            pass
+        except (RuntimeError, ValueError) as err:
+            raise EmailDeliveryError(str(err))
+
+        logger.info(
+            "Login MFA challenge issued: user_id=%s",
+            user.id,
+        )
+
+        return {
+            "mfa_required": True,
+            "mfa_token": create_mfa_token(str(user.id)),
+        }
+
     access_token = create_access_token(str(user.id))
     refresh_token = create_refresh_token(str(user.id))
 
@@ -160,6 +222,62 @@ def login(
         "refresh_token": refresh_token,
         "token_type": "bearer",
     }
+
+
+@router.post("/login/verify-otp", response_model=TokenResponse)
+def verify_login_otp(
+    request: VerifyOtpRequest,
+    db: Session = Depends(get_db),
+):
+    try:
+        user_id = verify_token(request.mfa_token, token_type="mfa")
+    except Exception:
+        raise AuthenticationError("Invalid or expired verification session")
+
+    if not verify_otp_code(db, int(user_id), code=request.code):
+        raise AuthenticationError("Invalid or expired code")
+
+    access_token = create_access_token(user_id)
+    refresh_token = create_refresh_token(user_id)
+
+    logger.info(
+        "User login successful (MFA): user_id=%s",
+        user_id,
+    )
+
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "token_type": "bearer",
+    }
+
+
+@router.post("/login/resend-otp", response_model=MessageResponse)
+def resend_login_otp(
+    request: ResendOtpRequest,
+    db: Session = Depends(get_db),
+):
+    try:
+        user_id = verify_token(request.mfa_token, token_type="mfa")
+    except Exception:
+        raise AuthenticationError("Invalid or expired verification session")
+
+    try:
+        user = db.query(User).filter(User.id == int(user_id)).first()
+    except SQLAlchemyError:
+        raise DatabaseError("Database operation failed")
+
+    if not user:
+        raise AuthenticationError("Invalid or expired verification session")
+
+    try:
+        create_and_send_otp(db, user)
+    except TimeoutError as err:
+        raise HTTPException(status_code=429, detail=str(err))
+    except (RuntimeError, ValueError) as err:
+        raise EmailDeliveryError(str(err))
+
+    return {"message": "A new code has been sent."}
 
 
 @router.post("/refresh", response_model=AccessTokenResponse)

@@ -14,6 +14,18 @@ export function loginUser({ username, password }) {
   return apiClient.post("/login", body).then((res) => res.data);
 }
 
+export function verifyLoginOtp({ mfaToken, code }) {
+  return apiClient
+    .post("/login/verify-otp", { mfa_token: mfaToken, code })
+    .then((res) => res.data);
+}
+
+export function resendLoginOtp(mfaToken) {
+  return apiClient
+    .post("/login/resend-otp", { mfa_token: mfaToken })
+    .then((res) => res.data);
+}
+
 export function logoutUser(refreshToken) {
   return apiClient
     .post("/logout", null, { params: { refresh_token: refreshToken } })

@@ -98,18 +98,21 @@ def _find_budget_summary_card(
     # own session, and materialize_due_recurrences already committed
     # before agent.invoke() was called, so everything this turn touched is
     # visible to this route's own session by the time invoke() returns.
+    all_threads = bool(status_call["args"].get("search_all_conversations"))
+
     target, *_ = resolve_budget_target(
         db,
         user_id,
         thread_id,
         status_call["args"].get("start_date"),
         status_call["args"].get("end_date"),
+        all_threads,
     )
 
     if target is None:
         return None
 
-    spent = _budget_spent(db, user_id, thread_id, target)
+    spent = _budget_spent(db, user_id, thread_id, target, all_threads)
 
     return BudgetSummaryCard(
         amount=target.amount,

@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { fetchCurrentUser, loginUser, logoutUser } from "../api/auth";
+import { fetchCurrentUser, loginUser, logoutUser, verifyLoginOtp } from "../api/auth";
 import { onSessionExpired } from "../api/client";
 import {
   clearTokens,
@@ -43,7 +43,21 @@ export function AuthProvider({ children }) {
   }, [clearSession]);
 
   const login = useCallback(async (username, password) => {
-    const tokens = await loginUser({ username, password });
+    const result = await loginUser({ username, password });
+
+    if (result.mfa_required) {
+      return { mfaRequired: true, mfaToken: result.mfa_token };
+    }
+
+    setTokens(result);
+    const profile = await fetchCurrentUser();
+    setUser(profile);
+    setStatus("authenticated");
+    return { mfaRequired: false, profile };
+  }, []);
+
+  const completeMfaLogin = useCallback(async (mfaToken, code) => {
+    const tokens = await verifyLoginOtp({ mfaToken, code });
     setTokens(tokens);
     const profile = await fetchCurrentUser();
     setUser(profile);
@@ -71,8 +85,8 @@ export function AuthProvider({ children }) {
   }, []);
 
   const value = useMemo(
-    () => ({ user, status, login, logout, refreshProfile }),
-    [user, status, login, logout, refreshProfile]
+    () => ({ user, status, login, completeMfaLogin, logout, refreshProfile }),
+    [user, status, login, completeMfaLogin, logout, refreshProfile]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

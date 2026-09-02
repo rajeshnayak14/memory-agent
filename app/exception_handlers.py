@@ -9,6 +9,7 @@ from app.exceptions import (
     UserNotFoundError,
     DatabaseError,
     ResourceNotFoundError,
+    EmailDeliveryError,
 )
 
 
@@ -76,6 +77,24 @@ def resource_not_found_handler(
     return JSONResponse(
         status_code=404,
         content={"detail": str(exc)},
+    )
+
+
+def email_delivery_error_handler(
+    request: Request,
+    exc: EmailDeliveryError,
+):
+    logger.error(
+        "Email delivery error: path=%s detail=%s",
+        request.url.path,
+        str(exc),
+    )
+
+    return JSONResponse(
+        status_code=502,
+        content={
+            "detail": "Could not send the verification email. Please try again shortly.",
+        },
     )
 
 

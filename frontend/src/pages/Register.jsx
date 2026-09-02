@@ -6,6 +6,7 @@ import TextField from "../components/TextField";
 import Button from "../components/Button";
 import { registerUser } from "../api/auth";
 import { getErrorMessage } from "../utils/errorMessage";
+import { isPasswordValid, PASSWORD_REQUIREMENT } from "../utils/password";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -25,8 +26,8 @@ export default function Register() {
       setError("Username must be at least 3 characters.");
       return;
     }
-    if (form.password.length < 3) {
-      setError("Password must be at least 3 characters.");
+    if (!isPasswordValid(form.password)) {
+      setError(PASSWORD_REQUIREMENT);
       return;
     }
 
@@ -73,8 +74,9 @@ export default function Register() {
           label="Password"
           type="password"
           autoComplete="new-password"
-          minLength={3}
+          minLength={8}
           maxLength={100}
+          hint={PASSWORD_REQUIREMENT}
           value={form.password}
           onChange={update("password")}
           required

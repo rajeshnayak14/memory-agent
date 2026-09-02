@@ -49,6 +49,7 @@ def get_me(
         "username": user.username,
         "email": user.email,
         "is_active": user.is_active,
+        "is_admin": user.is_admin,
         "preferred_currency": user.preferred_currency,
         "created_at": user.created_at,
     }
@@ -92,6 +93,7 @@ def update_me(
         "username": user.username,
         "email": user.email,
         "is_active": user.is_active,
+        "is_admin": user.is_admin,
         "preferred_currency": user.preferred_currency,
         "created_at": user.created_at,
     }

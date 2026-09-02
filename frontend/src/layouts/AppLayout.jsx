@@ -20,6 +20,7 @@ import {
   User,
   LogOut,
   X,
+  ShieldCheck,
 } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
@@ -63,6 +64,12 @@ const NAV_ITEMS = [
     icon: Brain,
   },
 ];
+
+const ADMIN_NAV_ITEM = {
+  to: "/admin",
+  label: "Admin",
+  icon: ShieldCheck,
+};
 
 function Brand({ collapsed }) {
   if (collapsed) {
@@ -436,6 +443,10 @@ export default function AppLayout() {
   const location = useLocation();
   const { user, logout } = useAuth();
 
+  const navItems = user?.is_admin
+    ? [...NAV_ITEMS, ADMIN_NAV_ITEM]
+    : NAV_ITEMS;
+
   const [collapsed, setCollapsed] = useState(false);
   const [conversations, setConversations] =
     useState([]);
@@ -684,7 +695,7 @@ export default function AppLayout() {
             <div className="my-5 border-t border-border" />
 
             <div className="space-y-1">
-              {NAV_ITEMS.map(
+              {navItems.map(
                 ({
                   to,
                   label,
@@ -718,7 +729,7 @@ export default function AppLayout() {
 
         {collapsed && (
           <div className="mt-4 flex flex-1 flex-col items-center gap-1 px-2">
-            {NAV_ITEMS.map(
+            {navItems.map(
               ({
                 to,
                 label,

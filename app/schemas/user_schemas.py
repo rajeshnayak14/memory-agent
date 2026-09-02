@@ -10,6 +10,7 @@ class UserResponse(BaseModel):
     username: str
     email: str | None
     is_active: bool
+    is_admin: bool
     preferred_currency: str
     created_at: datetime
 

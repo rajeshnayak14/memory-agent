@@ -12,6 +12,7 @@ import Goals from "./pages/Goals";
 import Memories from "./pages/Memories";
 import Settings from "./pages/Settings";
 import Profile from "./pages/Profile";
+import Admin from "./pages/Admin";
 
 export default function App() {
   return (
@@ -32,6 +33,7 @@ export default function App() {
           <Route path="/memories" element={<Memories />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/admin" element={<Admin />} />
         </Route>
       </Route>
 

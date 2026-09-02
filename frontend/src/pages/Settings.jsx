@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
-import { Settings as SettingsIcon, Palette, Wallet, Sun, Moon } from "lucide-react";
+import {
+  Settings as SettingsIcon,
+  Palette,
+  Wallet,
+  Sun,
+  Moon,
+  ShieldCheck,
+} from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
@@ -148,6 +155,24 @@ export default function Settings() {
                 Dark
               </button>
             </div>
+          </div>
+        </section>
+
+        <section className="mt-6 overflow-hidden rounded-xl border border-border bg-surface shadow-[0_4px_16px_rgba(32,37,34,0.03)]">
+          <div className="flex items-center gap-2 border-b border-border px-5 py-3.5">
+            <ShieldCheck size={15} className="text-accent" strokeWidth={1.8} />
+            <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
+              Account security
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3 px-5 py-4">
+            <ShieldCheck size={16} className="shrink-0 text-accent" strokeWidth={1.8} />
+            <p className="text-sm text-secondary">
+              Two-factor login is required for every account. After your
+              password, we'll email a code to {user.email || "your registered email"} to
+              finish signing in.
+            </p>
           </div>
         </section>
       </div>
