@@ -40,7 +40,7 @@ from app.schemas.auth_schemas import (
     ResendOtpRequest,
     MessageResponse,
 )
-from app.services.otp import create_and_send_otp, verify_otp_code
+from app.services.otp import OtpCooldownError, create_and_send_otp, verify_otp_code
 from app.validators import validate_password_strength
 
 
@@ -192,11 +192,15 @@ def login(
     if user.email:
         try:
             create_and_send_otp(db, user)
-        except TimeoutError:
+        except OtpCooldownError:
             # A code was already sent moments ago — fine, let the user use
             # that one rather than erroring on this step of login.
             pass
-        except (RuntimeError, ValueError) as err:
+        except Exception as err:
+            # Covers a missing/invalid email as well as any SMTP-layer
+            # failure (auth, connection refused, timeout, blocked port,
+            # etc.) — all of those must surface as a clean delivery error,
+            # never as an unhandled 500.
             raise EmailDeliveryError(str(err))
 
         logger.info(
@@ -272,9 +276,9 @@ def resend_login_otp(
 
     try:
         create_and_send_otp(db, user)
-    except TimeoutError as err:
+    except OtpCooldownError as err:
         raise HTTPException(status_code=429, detail=str(err))
-    except (RuntimeError, ValueError) as err:
+    except Exception as err:
         raise EmailDeliveryError(str(err))
 
     return {"message": "A new code has been sent."}

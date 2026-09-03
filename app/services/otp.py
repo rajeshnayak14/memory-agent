@@ -17,6 +17,17 @@ OTP_RESEND_COOLDOWN_SECONDS = 30
 OTP_MAX_ATTEMPTS = 5
 
 
+class OtpCooldownError(Exception):
+    """Raised when a not-yet-expired code was already sent recently.
+
+    A dedicated class rather than reusing the builtin TimeoutError — that
+    overlaps with Python's own socket timeout (an alias since 3.10), and a
+    real SMTP connection timeout must NOT be mistaken for "already sent,
+    that's fine" by callers that catch this specifically.
+    """
+    pass
+
+
 def _hash_code(code: str) -> str:
     # A 6-digit code has only 10^6 possibilities regardless of hash strength,
     # so this is basic at-rest hygiene (don't store the plaintext code), not
@@ -41,7 +52,7 @@ def create_and_send_otp(db: Session, user: User) -> None:
     now = datetime.now(timezone.utc)
 
     if recent and recent.created_at > now - timedelta(seconds=OTP_RESEND_COOLDOWN_SECONDS):
-        raise TimeoutError("Please wait before requesting another code.")
+        raise OtpCooldownError("Please wait before requesting another code.")
 
     code = f"{secrets.randbelow(10 ** OTP_LENGTH):0{OTP_LENGTH}d}"
 
