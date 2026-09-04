@@ -24,3 +24,6 @@ langmem==0.0.30
 
 # Config
 python-dotenv==1.2.3
+
+# Email (Resend HTTP API — SMTP ports are blocked on Render's free tier)
+requests==2.34.2

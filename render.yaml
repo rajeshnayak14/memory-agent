@@ -21,13 +21,7 @@ services:
         sync: false
       - key: ADMIN_EMAILS
         sync: false
-      - key: SMTP_HOST
+      - key: SENDGRID_API_KEY
         sync: false
-      - key: SMTP_PORT
-        sync: false
-      - key: SMTP_USERNAME
-        sync: false
-      - key: SMTP_PASSWORD
-        sync: false
-      - key: SMTP_FROM
+      - key: SENDGRID_FROM
         sync: false
