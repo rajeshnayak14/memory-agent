@@ -581,7 +581,7 @@ export default function AppLayout() {
   };
 
   return (
-    <div className="flex min-h-screen bg-page text-primary">
+    <div className="flex h-screen overflow-hidden bg-page text-primary">
       <aside
         className={`hidden shrink-0 border-r border-border bg-surface transition-[width] duration-200 lg:flex lg:flex-col ${
           collapsed
@@ -767,7 +767,7 @@ export default function AppLayout() {
         </div>
       </aside>
 
-      <main className="min-w-0 flex-1">
+      <main className="min-h-0 min-w-0 flex-1 overflow-y-auto">
         <Outlet />
       </main>
 
