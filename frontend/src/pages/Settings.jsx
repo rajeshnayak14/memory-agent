@@ -169,9 +169,9 @@ export default function Settings() {
           <div className="flex items-center gap-3 px-5 py-4">
             <ShieldCheck size={16} className="shrink-0 text-accent" strokeWidth={1.8} />
             <p className="text-sm text-secondary">
-              Two-factor login is required for every account. After your
-              password, we'll email a code to {user.email || "your registered email"} to
-              finish signing in.
+              {user.email_verified
+                ? `Your email (${user.email || "on file"}) is verified. Future logins just need your password.`
+                : `${user.email || "Your email"} hasn't been verified yet — you'll be asked for a code the next time you log in.`}
             </p>
           </div>
         </section>

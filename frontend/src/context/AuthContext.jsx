@@ -1,5 +1,11 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { fetchCurrentUser, loginUser, logoutUser, verifyLoginOtp } from "../api/auth";
+import {
+  fetchCurrentUser,
+  loginUser,
+  logoutUser,
+  verifyEmail,
+  signInWithGoogle,
+} from "../api/auth";
 import { onSessionExpired } from "../api/client";
 import {
   clearTokens,
@@ -42,28 +48,39 @@ export function AuthProvider({ children }) {
       });
   }, [clearSession]);
 
-  const login = useCallback(async (username, password) => {
-    const result = await loginUser({ username, password });
-
-    if (result.mfa_required) {
-      return { mfaRequired: true, mfaToken: result.mfa_token };
-    }
-
-    setTokens(result);
-    const profile = await fetchCurrentUser();
-    setUser(profile);
-    setStatus("authenticated");
-    return { mfaRequired: false, profile };
-  }, []);
-
-  const completeMfaLogin = useCallback(async (mfaToken, code) => {
-    const tokens = await verifyLoginOtp({ mfaToken, code });
+  // Shared by every path that ends with "here are real tokens" — password
+  // login, completing email verification, and Google sign-in.
+  const settleSession = useCallback(async (tokens) => {
     setTokens(tokens);
     const profile = await fetchCurrentUser();
     setUser(profile);
     setStatus("authenticated");
     return profile;
   }, []);
+
+  const login = useCallback(async (username, password) => {
+    const result = await loginUser({ username, password });
+
+    if (result.verification_required) {
+      return {
+        verificationRequired: true,
+        verificationToken: result.verification_token,
+      };
+    }
+
+    const profile = await settleSession(result);
+    return { verificationRequired: false, profile };
+  }, [settleSession]);
+
+  const completeVerification = useCallback(async (verificationToken, code) => {
+    const tokens = await verifyEmail({ verificationToken, code });
+    return settleSession(tokens);
+  }, [settleSession]);
+
+  const loginWithGoogle = useCallback(async (credential) => {
+    const tokens = await signInWithGoogle(credential);
+    return settleSession(tokens);
+  }, [settleSession]);
 
   const logout = useCallback(async () => {
     const refreshToken = getRefreshToken();
@@ -85,8 +102,16 @@ export function AuthProvider({ children }) {
   }, []);
 
   const value = useMemo(
-    () => ({ user, status, login, completeMfaLogin, logout, refreshProfile }),
-    [user, status, login, completeMfaLogin, logout, refreshProfile]
+    () => ({
+      user,
+      status,
+      login,
+      completeVerification,
+      loginWithGoogle,
+      logout,
+      refreshProfile,
+    }),
+    [user, status, login, completeVerification, loginWithGoogle, logout, refreshProfile]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

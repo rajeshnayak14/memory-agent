@@ -50,6 +50,7 @@ def get_me(
         "email": user.email,
         "is_active": user.is_active,
         "is_admin": user.is_admin,
+        "email_verified": user.email_verified,
         "preferred_currency": user.preferred_currency,
         "created_at": user.created_at,
     }
@@ -94,6 +95,7 @@ def update_me(
         "email": user.email,
         "is_active": user.is_active,
         "is_admin": user.is_admin,
+        "email_verified": user.email_verified,
         "preferred_currency": user.preferred_currency,
         "created_at": user.created_at,
     }

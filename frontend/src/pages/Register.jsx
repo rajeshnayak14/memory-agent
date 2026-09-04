@@ -4,16 +4,21 @@ import { UserPlus } from "lucide-react";
 import AuthLayout from "../layouts/AuthLayout";
 import TextField from "../components/TextField";
 import Button from "../components/Button";
+import GoogleSignInButton from "../components/GoogleSignInButton";
+import VerifyEmailStep from "../components/VerifyEmailStep";
 import { registerUser } from "../api/auth";
+import { useAuth } from "../context/AuthContext";
 import { getErrorMessage } from "../utils/errorMessage";
 import { isPasswordValid, PASSWORD_REQUIREMENT } from "../utils/password";
 
 export default function Register() {
   const navigate = useNavigate();
+  const { loginWithGoogle } = useAuth();
 
   const [form, setForm] = useState({ username: "", email: "", password: "" });
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [verificationToken, setVerificationToken] = useState(null);
 
   const update = (field) => (event) =>
     setForm((prev) => ({ ...prev, [field]: event.target.value }));
@@ -35,14 +40,36 @@ export default function Register() {
     setError("");
 
     try {
-      await registerUser(form);
-      navigate("/login", { state: { registered: true } });
+      const result = await registerUser(form);
+      setVerificationToken(result.verification_token);
     } catch (err) {
       setError(getErrorMessage(err, "Unable to create your account. Please try again."));
     } finally {
       setSubmitting(false);
     }
   };
+
+  const handleGoogleCredential = async (credential) => {
+    setError("");
+
+    try {
+      await loginWithGoogle(credential);
+      navigate("/dashboard", { replace: true });
+    } catch (err) {
+      setError(getErrorMessage(err, "Google sign-in failed. Please try again."));
+    }
+  };
+
+  if (verificationToken) {
+    return (
+      <AuthLayout>
+        <VerifyEmailStep
+          verificationToken={verificationToken}
+          onVerified={() => navigate("/dashboard", { replace: true })}
+        />
+      </AuthLayout>
+    );
+  }
 
   return (
     <AuthLayout>
@@ -92,6 +119,21 @@ export default function Register() {
           Create account
         </Button>
       </form>
+
+      {import.meta.env.VITE_GOOGLE_CLIENT_ID && (
+        <>
+          <div className="my-5 flex items-center gap-3">
+            <div className="h-px flex-1 bg-border" />
+            <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-faint">or</span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+
+          <GoogleSignInButton
+            onCredential={handleGoogleCredential}
+            onError={setError}
+          />
+        </>
+      )}
 
       <p className="mt-6 text-sm text-ink-500">
         Already have an account?{" "}

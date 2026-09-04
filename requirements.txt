@@ -8,6 +8,7 @@ email-validator==2.3.0        # pydantic EmailStr
 # Auth
 python-jose==3.5.0
 argon2-cffi==25.1.0
+google-auth==2.56.3           # verifying Google Sign-In ID tokens
 
 # Database
 SQLAlchemy==2.0.52
@@ -25,5 +26,5 @@ langmem==0.0.30
 # Config
 python-dotenv==1.2.3
 
-# Email (Resend HTTP API — SMTP ports are blocked on Render's free tier)
+# Email (SendGrid HTTP API — SMTP ports are blocked on Render's free tier)
 requests==2.34.2

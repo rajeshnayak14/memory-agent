@@ -15,7 +15,7 @@ ALGORITHM = "HS256"
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 REFRESH_TOKEN_EXPIRE_DAYS = 7
-MFA_TOKEN_EXPIRE_MINUTES = 10
+VERIFICATION_TOKEN_EXPIRE_MINUTES = 10
 
 
 def create_access_token(user_id: str):
@@ -54,14 +54,17 @@ def create_refresh_token(user_id: str):
     )
 
 
-def create_mfa_token(user_id: str):
+def create_verification_token(user_id: str):
+    """Short-lived token scoping an email-verification OTP attempt to one
+    account — used both right after registration and when a login is
+    blocked on an account that never finished verifying."""
     expire = datetime.now(timezone.utc) + timedelta(
-        minutes=MFA_TOKEN_EXPIRE_MINUTES
+        minutes=VERIFICATION_TOKEN_EXPIRE_MINUTES
     )
 
     payload = {
         "sub": user_id,
-        "type": "mfa",
+        "type": "email_verification",
         "exp": expire,
     }
 

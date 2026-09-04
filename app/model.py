@@ -45,6 +45,17 @@ class User(Base):
         nullable=False,
     )
 
+    # Verified once, either by completing the registration OTP or by
+    # signing in with Google (which already proves email ownership).
+    # Login is blocked for an account with an email until this is true —
+    # verification is a one-time gate, not repeated on every login.
+    email_verified: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        server_default="false",
+        nullable=False,
+    )
+
     preferred_currency: Mapped[str] = mapped_column(
         String(3),
         default="INR",

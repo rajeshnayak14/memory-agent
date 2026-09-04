@@ -11,6 +11,7 @@ class UserResponse(BaseModel):
     email: str | None
     is_active: bool
     is_admin: bool
+    email_verified: bool
     preferred_currency: str
     created_at: datetime
 

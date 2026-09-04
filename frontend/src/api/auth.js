@@ -14,15 +14,21 @@ export function loginUser({ username, password }) {
   return apiClient.post("/login", body).then((res) => res.data);
 }
 
-export function verifyLoginOtp({ mfaToken, code }) {
+export function verifyEmail({ verificationToken, code }) {
   return apiClient
-    .post("/login/verify-otp", { mfa_token: mfaToken, code })
+    .post("/verify-email", { verification_token: verificationToken, code })
     .then((res) => res.data);
 }
 
-export function resendLoginOtp(mfaToken) {
+export function resendVerification(verificationToken) {
   return apiClient
-    .post("/login/resend-otp", { mfa_token: mfaToken })
+    .post("/verify-email/resend", { verification_token: verificationToken })
+    .then((res) => res.data);
+}
+
+export function signInWithGoogle(credential) {
+  return apiClient
+    .post("/auth/google", { credential })
     .then((res) => res.data);
 }
 
