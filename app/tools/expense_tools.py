@@ -500,6 +500,72 @@ def get_expenses(
 # EXPENSE BREAKDOWN
 # ============================================================
 
+def resolve_expense_breakdown(
+    db,
+    user_id: int,
+    thread_id: str,
+    date: str | None = None,
+    period: str | None = None,
+):
+    """Shared by get_expense_breakdown and chat_routes.py's structured
+    card, so both compute byte-identical category totals.
+
+    Returns (breakdown, totals_by_currency, error). `breakdown` is
+    {(category, currency): amount}; `totals_by_currency` is
+    {currency: amount}. `error` is a user-facing message when date/period
+    failed to parse — both other values are empty dicts in that case.
+    """
+    user_id = int(user_id)
+
+    query = build_expense_query(
+        db=db,
+        user_id=user_id,
+        thread_id=thread_id,
+    )
+
+    if date:
+        resolved = resolve_date(date)
+
+        if not resolved:
+            return {}, {}, "Invalid date."
+
+        query = build_expense_query(
+            db=db,
+            user_id=user_id,
+            thread_id=thread_id,
+            date=resolved,
+        )
+
+    elif period:
+        resolved_range = resolve_range(period)
+
+        if not resolved_range:
+            return {}, {}, "Invalid period."
+
+        start, end = resolved_range
+
+        query = build_expense_query(
+            db=db,
+            user_id=user_id,
+            thread_id=thread_id,
+            start_date=start,
+            end_date=end,
+        )
+
+    breakdown = {}
+    totals_by_currency = {}
+
+    for expense in query.all():
+        key = (expense.category, expense.currency)
+        breakdown.setdefault(key, 0.0)
+        breakdown[key] += float(expense.amount)
+
+        totals_by_currency.setdefault(expense.currency, 0.0)
+        totals_by_currency[expense.currency] += float(expense.amount)
+
+    return breakdown, totals_by_currency, None
+
+
 @tool
 def get_expense_breakdown(
     date: str | None = None,
@@ -520,56 +586,15 @@ def get_expense_breakdown(
     db = SessionLocal()
 
     try:
-        query = build_expense_query(
-            db=db,
-            user_id=int(user_id),
-            thread_id=thread_id,
+        breakdown, totals_by_currency, error = resolve_expense_breakdown(
+            db, user_id, thread_id, date, period,
         )
 
-        if date:
-            resolved = resolve_date(date)
+        if error:
+            return error
 
-            if not resolved:
-                return "Invalid date."
-
-            query = build_expense_query(
-                db=db,
-                user_id=int(user_id),
-                thread_id=thread_id,
-                date=resolved,
-            )
-
-        elif period:
-            resolved_range = resolve_range(period)
-
-            if not resolved_range:
-                return "Invalid period."
-
-            start, end = resolved_range
-
-            query = build_expense_query(
-                db=db,
-                user_id=int(user_id),
-                thread_id=thread_id,
-                start_date=start,
-                end_date=end,
-            )
-
-        expenses = query.all()
-
-        if not expenses:
+        if not breakdown:
             return "No expenses found for the requested period."
-
-        breakdown = {}
-        totals_by_currency = {}
-
-        for expense in expenses:
-            key = (expense.category, expense.currency)
-            breakdown.setdefault(key, 0.0)
-            breakdown[key] += float(expense.amount)
-
-            totals_by_currency.setdefault(expense.currency, 0.0)
-            totals_by_currency[expense.currency] += float(expense.amount)
 
         lines = [
             f"Total spending: {format_money(amount, currency)}"

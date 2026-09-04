@@ -1,5 +1,6 @@
 import { Brain, Check, RefreshCw } from "lucide-react";
 import BudgetSummaryCard from "./BudgetSummaryCard";
+import ExpenseBreakdownCard from "./ExpenseBreakdownCard";
 
 function Avatar({ isUser }) {
   if (isUser) return null;
@@ -41,6 +42,12 @@ export default function ChatMessageRow({ message, onRetry }) {
         {!isUser && message.card?.type === "budget_summary" && (
           <div className="w-full max-w-sm">
             <BudgetSummaryCard card={message.card} />
+          </div>
+        )}
+
+        {!isUser && message.card?.type === "expense_breakdown" && (
+          <div className="w-full max-w-sm">
+            <ExpenseBreakdownCard card={message.card} />
           </div>
         )}
 

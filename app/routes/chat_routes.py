@@ -17,6 +17,7 @@ from app.tools.expense_tools import (
     _budget_spent,
     normalize_budget_action,
     resolve_budget_target,
+    resolve_expense_breakdown,
 )
 
 logger = logging.getLogger(__name__)
@@ -39,9 +40,85 @@ class BudgetSummaryCard(BaseModel):
     period_end: datetime
 
 
+class ExpenseBreakdownItem(BaseModel):
+    category: str
+    currency: str
+    amount: float
+
+
+class CurrencyTotal(BaseModel):
+    currency: str
+    amount: float
+
+
+class ExpenseBreakdownCard(BaseModel):
+    type: Literal["expense_breakdown"] = "expense_breakdown"
+    items: list[ExpenseBreakdownItem]
+    totals: list[CurrencyTotal]
+
+
 class ChatResponse(BaseModel):
     response: str
-    card: BudgetSummaryCard | None = None
+    card: BudgetSummaryCard | ExpenseBreakdownCard | None = None
+
+
+def _find_successful_tool_call(
+    messages: list,
+    tool_name: str,
+    predicate=None,
+):
+    """Find the last call to `tool_name` made in the CURRENT turn whose
+    result succeeded — shared by every structured-card finder below.
+
+    `messages` is the full checkpointed thread history (the checkpointer
+    accumulates across every /chat call for this thread_id) — scoping to
+    everything after the last HumanMessage keeps this to only the current
+    turn's tool calls, so an earlier turn's tool call never reattaches
+    itself to an unrelated later reply.
+
+    `predicate(args)` optionally filters further (e.g. only a
+    budget_manager call whose action is "status").
+
+    Returns (tool_call, turn_messages) — tool_call is None if no matching
+    successful call was found this turn.
+    """
+    last_human_idx = -1
+    for i, message in enumerate(messages):
+        if message.type == "human":
+            last_human_idx = i
+
+    turn_messages = messages[last_human_idx + 1:]
+
+    matched_call = None
+
+    for message in turn_messages:
+        if message.type != "ai" or not getattr(message, "tool_calls", None):
+            continue
+
+        for tool_call in message.tool_calls:
+            if tool_call["name"] != tool_name:
+                continue
+
+            if predicate and not predicate(tool_call["args"]):
+                continue
+
+            matched_call = tool_call  # last match in the turn wins
+
+    if matched_call is None:
+        return None, turn_messages
+
+    tool_message = next(
+        (
+            m for m in turn_messages
+            if m.type == "tool" and m.tool_call_id == matched_call["id"]
+        ),
+        None,
+    )
+
+    if tool_message is None or tool_message.status != "success":
+        return None, turn_messages
+
+    return matched_call, turn_messages
 
 
 def _find_budget_summary_card(
@@ -51,46 +128,14 @@ def _find_budget_summary_card(
     messages: list,
 ) -> BudgetSummaryCard | None:
     """Re-resolve a budget_manager(status) call made THIS turn into a
-    structured card, if one was made.
-
-    `messages` is the full checkpointed thread history (the checkpointer
-    accumulates across every /chat call for this thread_id) — scoping to
-    everything after the last HumanMessage keeps this to only the current
-    turn's tool calls, so an earlier turn's budget check never reattaches
-    itself to an unrelated later reply.
-    """
-    last_human_idx = -1
-    for i, message in enumerate(messages):
-        if message.type == "human":
-            last_human_idx = i
-
-    turn_messages = messages[last_human_idx + 1:]
-
-    status_call = None
-
-    for message in turn_messages:
-        if message.type != "ai" or not getattr(message, "tool_calls", None):
-            continue
-
-        for tool_call in message.tool_calls:
-            if tool_call["name"] != "budget_manager":
-                continue
-
-            if normalize_budget_action(tool_call["args"].get("action")) == "status":
-                status_call = tool_call  # last match in the turn wins
-
-    if status_call is None:
-        return None
-
-    tool_message = next(
-        (
-            m for m in turn_messages
-            if m.type == "tool" and m.tool_call_id == status_call["id"]
-        ),
-        None,
+    structured card, if one was made."""
+    status_call, _ = _find_successful_tool_call(
+        messages,
+        "budget_manager",
+        predicate=lambda args: normalize_budget_action(args.get("action")) == "status",
     )
 
-    if tool_message is None or tool_message.status != "success":
+    if status_call is None:
         return None
 
     # Re-resolve the exact same target the tool call itself resolved —
@@ -122,6 +167,42 @@ def _find_budget_summary_card(
         currency=target.currency,
         period_start=target.period_start,
         period_end=target.period_end,
+    )
+
+
+def _find_expense_breakdown_card(
+    db: Session,
+    user_id: int,
+    thread_id: str,
+    messages: list,
+) -> ExpenseBreakdownCard | None:
+    """Re-resolve a get_expense_breakdown call made THIS turn into a
+    structured card, if one was made."""
+    breakdown_call, _ = _find_successful_tool_call(messages, "get_expense_breakdown")
+
+    if breakdown_call is None:
+        return None
+
+    breakdown, totals_by_currency, error = resolve_expense_breakdown(
+        db,
+        user_id,
+        thread_id,
+        breakdown_call["args"].get("date"),
+        breakdown_call["args"].get("period"),
+    )
+
+    if error or not breakdown:
+        return None
+
+    return ExpenseBreakdownCard(
+        items=[
+            ExpenseBreakdownItem(category=category, currency=currency, amount=amount)
+            for (category, currency), amount in sorted(breakdown.items())
+        ],
+        totals=[
+            CurrencyTotal(currency=currency, amount=amount)
+            for currency, amount in sorted(totals_by_currency.items())
+        ],
     )
 
 
@@ -218,6 +299,8 @@ def chat(
         )
 
     card = _find_budget_summary_card(
+        db, int(user_id), request.thread_id, response["messages"],
+    ) or _find_expense_breakdown_card(
         db, int(user_id), request.thread_id, response["messages"],
     )
 
