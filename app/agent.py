@@ -25,10 +25,17 @@ from app.tools.expense_tools import (
 # Pinning an explicit budget keeps the reasoning but guarantees the model
 # actually emits a tool call or an answer. 1024 was sufficient at 7 tools;
 # growing to 10 tools + a longer prompt reintroduced occasional empty
-# responses, bumped to 2048; the balance/category-breakdown prompt section
-# (10229 chars) pushed it back to a ~10% empty-response rate in
-# d:/tmp/probe_thinking.py, so this is bumped to 3072 — re-verify with that
-# probe again before adding further tools/prompt text.
+# responses, bumped to 2048, then to 3072 for the balance/category-
+# breakdown prompt section. A later attempt at an anti-repetition
+# instruction (see chat_routes.py's _looks_like_expense_breakdown_text
+# for why that's handled deterministically at the route level instead)
+# was reverted rather than kept, since it didn't reliably change model
+# behavior and only added prompt length. Re-verify with
+# d:/tmp/probe_thinking.py before adding further tools/prompt text —
+# note that heavy same-session API usage can itself degrade results
+# (observed empty-response rates swinging non-monotonically across
+# budget values in a single afternoon of testing), so treat a single
+# noisy run with suspicion and prefer a fresh run if in doubt.
 model = init_chat_model(
     "google_genai:gemini-2.5-flash",
     thinking_budget=3072,

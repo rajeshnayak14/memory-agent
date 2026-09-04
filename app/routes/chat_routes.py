@@ -1,4 +1,5 @@
 import logging
+import re
 from datetime import datetime, timezone
 from typing import Literal
 
@@ -170,25 +171,52 @@ def _find_budget_summary_card(
     )
 
 
+# A bullet line shaped like "- category: ₹amount" / "*   **category:** ₹amount"
+# — how the model renders a category breakdown in prose. Under a long,
+# repetitive conversation history the model sometimes answers a spending
+# question by reciting an earlier tool result from its own context instead
+# of calling get_expense_breakdown again this turn (confirmed empirically:
+# up to ~40% of turns on a heavily-repeated real thread) — prompt wording
+# alone couldn't close this reliably, so when that happens and the
+# response still reads as a breakdown, the card is still attached below by
+# computing the CURRENT real breakdown directly, independent of whether
+# the model made the tool call.
+_BREAKDOWN_LINE_RE = re.compile(
+    r"^[ \t]*[-*][ \t]+\*{0,2}[^:*\n]+\*{0,2}:\*{0,2}[ \t]*[₹$€£]",
+    re.MULTILINE,
+)
+
+
+def _looks_like_expense_breakdown_text(text: str) -> bool:
+    return len(_BREAKDOWN_LINE_RE.findall(text)) >= 2
+
+
 def _find_expense_breakdown_card(
     db: Session,
     user_id: int,
     thread_id: str,
     messages: list,
+    response_text: str,
 ) -> ExpenseBreakdownCard | None:
-    """Re-resolve a get_expense_breakdown call made THIS turn into a
-    structured card, if one was made."""
+    """Resolve the current category breakdown into a structured card,
+    either re-resolving a get_expense_breakdown call made THIS turn (the
+    normal case), or — if none was made but the reply still reads like a
+    breakdown — falling back to the default (no date/period) breakdown so
+    the card stays accurate regardless of what the model did.
+    """
     breakdown_call, _ = _find_successful_tool_call(messages, "get_expense_breakdown")
 
-    if breakdown_call is None:
+    if breakdown_call is not None:
+        date_arg = breakdown_call["args"].get("date")
+        period_arg = breakdown_call["args"].get("period")
+    elif _looks_like_expense_breakdown_text(response_text):
+        date_arg = None
+        period_arg = None
+    else:
         return None
 
     breakdown, totals_by_currency, error = resolve_expense_breakdown(
-        db,
-        user_id,
-        thread_id,
-        breakdown_call["args"].get("date"),
-        breakdown_call["args"].get("period"),
+        db, user_id, thread_id, date_arg, period_arg,
     )
 
     if error or not breakdown:
@@ -301,7 +329,7 @@ def chat(
     card = _find_budget_summary_card(
         db, int(user_id), request.thread_id, response["messages"],
     ) or _find_expense_breakdown_card(
-        db, int(user_id), request.thread_id, response["messages"],
+        db, int(user_id), request.thread_id, response["messages"], content,
     )
 
     logger.info(
