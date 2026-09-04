@@ -805,11 +805,19 @@ def resolve_budget_target(
     start_date: str | None = None,
     end_date: str | None = None,
     all_threads: bool = False,
+    period: str | None = None,
 ):
     """Resolve the budget budget_manager's status/increase/decrease/delete
-    actions target: the exact period if dates are given, otherwise the
-    currently active budget. Shared with chat_routes.py so the structured
-    chat card re-resolves the byte-identical target the tool used.
+    actions target: the exact period if dates (or a relative `period`
+    phrase) are given, otherwise the currently active budget. Shared with
+    chat_routes.py so the structured chat card re-resolves the
+    byte-identical target the tool used.
+
+    `period` (e.g. "this month", "this week", "last month") is resolved
+    against today's actual calendar date via `resolve_range` — this must
+    be used for any relative phrase instead of start_date/end_date, since
+    those only accept real dates and relative phrases aren't parseable
+    dates. Ignored if start_date/end_date are also given.
 
     `all_threads` widens the search to every conversation this user has
     (not just `thread_id`) — used only for an explicit "check my budget
@@ -819,7 +827,22 @@ def resolve_budget_target(
     matching budget exists; `start`/`end` are None unless an explicit
     period was requested (and was valid).
     """
-    explicit_period = bool(start_date or end_date)
+    explicit_period = bool(start_date or end_date or period)
+
+    if period and not (start_date or end_date):
+        resolved_range = resolve_range(period)
+
+        if not resolved_range:
+            return None, None, None, explicit_period
+
+        start, end = resolved_range
+
+        return (
+            _find_budget(db, user_id, thread_id, start, end, all_threads),
+            start,
+            end,
+            explicit_period,
+        )
 
     if explicit_period:
         if not start_date or not end_date:
@@ -903,6 +926,7 @@ def budget_manager(
     end_date: str | None = None,
     currency: str | None = None,
     search_all_conversations: bool = False,
+    period: str | None = None,
 ) -> str:
     """
     Manage budgets in the current conversation thread.
@@ -916,15 +940,21 @@ def budget_manager(
     - list
     - delete
 
-    If status/increase/decrease/delete has no dates, the currently
-    active budget for the current thread is targeted — this already
-    covers "this month"/"right now"/"currently" style requests, so do
-    NOT pass phrases like "this month" as start_date/end_date (they
-    aren't parseable dates and will fail); just omit both instead.
+    If status/increase/decrease/delete has no dates AND no period, the
+    currently active budget for the current thread is targeted.
 
-    If dates are supplied, the exact budget period is targeted. Only
-    pass actual dates here (e.g. "2026-09-01", "today"), never relative
-    phrases like "this month" or "this week".
+    For a relative phrase like "this month", "this week", "last month",
+    "next week" — including for set/update, e.g. "set my budget to 8500
+    for this month" — use the `period` parameter, NEVER start_date/
+    end_date. `period` is resolved against today's real calendar date on
+    the server; you must not compute or guess the actual dates yourself.
+
+    Only use start_date/end_date for an explicit, named date range (e.g.
+    "from August 25 to August 31"), with real dates like "2026-09-01" or
+    "today" — never a relative phrase.
+
+    set/update ALWAYS need one of period or start_date+end_date — there
+    is no "currently active" fallback when creating a brand new budget.
 
     For set/update, if currency is not given, the user's preferred
     currency is used.
@@ -982,13 +1012,15 @@ def budget_manager(
                 or parsed_end_inclusive < parsed_start
             ):
                 return "Invalid budget date range."
+        elif period and not resolve_range(period):
+            return "Invalid period."
 
         # Only status/list honor a cross-conversation search — mutating
         # actions always stay scoped to this conversation's own budget.
         all_threads = search_all_conversations and action in {"status", "list"}
 
         target, start, end, explicit_period = resolve_budget_target(
-            db, user_id, thread_id, start_date, end_date, all_threads,
+            db, user_id, thread_id, start_date, end_date, all_threads, period,
         )
 
         # ---------------------------------------------------------

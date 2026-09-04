@@ -107,6 +107,7 @@ def _find_budget_summary_card(
         status_call["args"].get("start_date"),
         status_call["args"].get("end_date"),
         all_threads,
+        status_call["args"].get("period"),
     )
 
     if target is None:
