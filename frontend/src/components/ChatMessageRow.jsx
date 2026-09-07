@@ -17,6 +17,13 @@ export default function ChatMessageRow({ message, onRetry }) {
   const isError = message.status === "error";
   const isSending = message.status === "sending";
 
+  // Whenever a structured card is attached, the model's own text is just
+  // a prose/bullet restatement of the exact same numbers the card shows
+  // (that's how every card-producing reply reads) — showing both is
+  // pure duplication, so the card replaces the text bubble rather than
+  // sitting alongside it.
+  const hasCard = !isUser && Boolean(message.card);
+
   const bubbleClass = isUser
     ? "bg-accent-subtle text-primary"
     : isError
@@ -28,16 +35,18 @@ export default function ChatMessageRow({ message, onRetry }) {
       <Avatar isUser={isUser} />
 
       <div className={`flex max-w-[75%] flex-col ${isUser ? "items-end" : "items-start"}`}>
-        <div className={`rounded-2xl px-4 py-2.5 text-sm leading-6 ${bubbleClass}`}>
-          <p className="whitespace-pre-wrap">{message.content}</p>
+        {!hasCard && (
+          <div className={`rounded-2xl px-4 py-2.5 text-sm leading-6 ${bubbleClass}`}>
+            <p className="whitespace-pre-wrap">{message.content}</p>
 
-          {isSending && (
-            <div className="mt-1.5 flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-current opacity-60" />
-              <span className="text-xs opacity-70">Sending…</span>
-            </div>
-          )}
-        </div>
+            {isSending && (
+              <div className="mt-1.5 flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-current opacity-60" />
+                <span className="text-xs opacity-70">Sending…</span>
+              </div>
+            )}
+          </div>
+        )}
 
         {!isUser && message.card?.type === "budget_summary" && (
           <div className="w-full max-w-sm">
