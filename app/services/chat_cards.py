@@ -1,5 +1,5 @@
 import re
-from datetime import datetime
+from datetime import date as date_type, datetime
 from typing import Literal
 
 from pydantic import BaseModel
@@ -9,6 +9,7 @@ from app.tools.expense_tools import (
     normalize_budget_action,
     resolve_budget_target,
     resolve_expense_breakdown,
+    resolve_expense_daily_breakdown,
 )
 
 
@@ -39,7 +40,18 @@ class ExpenseBreakdownCard(BaseModel):
     totals: list[CurrencyTotal]
 
 
-ChatCard = BudgetSummaryCard | ExpenseBreakdownCard
+class DailyBreakdownDay(BaseModel):
+    date: date_type
+    items: list[ExpenseBreakdownItem]
+
+
+class DailyBreakdownCard(BaseModel):
+    type: Literal["daily_breakdown"] = "daily_breakdown"
+    days: list[DailyBreakdownDay]
+    totals: list[CurrencyTotal]
+
+
+ChatCard = BudgetSummaryCard | ExpenseBreakdownCard | DailyBreakdownCard
 
 
 def segment_into_turns(messages: list) -> list[list]:
@@ -211,8 +223,27 @@ _BREAKDOWN_LINE_RE = re.compile(
     re.MULTILINE,
 )
 
+# A standalone "**August 29, 2026**" / "August 29, 2026" line — how the
+# model headers each day in a date-wise reply. get_expense_daily_
+# breakdown's bullet lines are otherwise IDENTICAL in shape to a plain
+# category breakdown's ("- category: amount" either way), so this header
+# is the only reliable signal that a recited-from-memory reply (no fresh
+# tool call this turn) is date-wise rather than a plain category list.
+_DATE_HEADER_RE = re.compile(
+    r"^\*{0,2}(?:January|February|March|April|May|June|July|August|"
+    r"September|October|November|December) \d{1,2},? \d{4}\*{0,2}[ \t]*$",
+    re.MULTILINE,
+)
+
+
+def _looks_like_daily_breakdown_text(text: str) -> bool:
+    return bool(_DATE_HEADER_RE.search(text))
+
 
 def _looks_like_expense_breakdown_text(text: str) -> bool:
+    if _looks_like_daily_breakdown_text(text):
+        return False
+
     return len(_BREAKDOWN_LINE_RE.findall(text)) >= 2
 
 
@@ -269,6 +300,62 @@ def find_expense_breakdown_card(
     )
 
 
+def find_daily_breakdown_card(
+    db, user_id: int, thread_id: str, turn_messages: list, response_text: str,
+) -> DailyBreakdownCard | None:
+    """Resolve this turn's day-by-day breakdown into a structured card,
+    either re-resolving a get_expense_daily_breakdown call made in this
+    turn, or — if none was made but the reply still reads like one (has
+    a date-header line) — falling back to the default (no date/period)
+    breakdown so the card stays accurate regardless of what the model
+    did.
+    """
+    daily_call = _find_successful_tool_call(turn_messages, "get_expense_daily_breakdown")
+
+    if daily_call is not None:
+        date_arg = daily_call["args"].get("date")
+        period_arg = daily_call["args"].get("period")
+    elif _looks_like_daily_breakdown_text(response_text):
+        date_arg = None
+        period_arg = None
+    else:
+        return None
+
+    grouped, _, error = resolve_expense_daily_breakdown(
+        db, user_id, thread_id, date_arg, period_arg,
+    )
+
+    if error or not grouped:
+        return None
+
+    days = []
+    totals_by_currency: dict[str, float] = {}
+
+    for day in sorted(grouped):
+        categories = grouped[day]
+
+        days.append(
+            DailyBreakdownDay(
+                date=day,
+                items=[
+                    ExpenseBreakdownItem(category=category, currency=currency, amount=amount)
+                    for (category, currency), amount in sorted(categories.items())
+                ],
+            )
+        )
+
+        for (_category, currency), amount in categories.items():
+            totals_by_currency[currency] = totals_by_currency.get(currency, 0.0) + amount
+
+    return DailyBreakdownCard(
+        days=days,
+        totals=[
+            CurrencyTotal(currency=currency, amount=amount)
+            for currency, amount in sorted(totals_by_currency.items())
+        ],
+    )
+
+
 def find_card_for_turn(
     db, user_id: int, thread_id: str, turn_messages: list, response_text: str,
 ) -> ChatCard | None:
@@ -277,5 +364,6 @@ def find_card_for_turn(
     and conversation-history reconstruction call."""
     return (
         find_budget_summary_card(db, user_id, thread_id, turn_messages)
+        or find_daily_breakdown_card(db, user_id, thread_id, turn_messages, response_text)
         or find_expense_breakdown_card(db, user_id, thread_id, turn_messages, response_text)
     )

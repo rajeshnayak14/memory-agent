@@ -618,6 +618,78 @@ def get_expense_breakdown(
 # DAILY BREAKDOWN
 # ============================================================
 
+def resolve_expense_daily_breakdown(
+    db,
+    user_id: int,
+    thread_id: str,
+    date: str | None = None,
+    period: str | None = None,
+):
+    """Shared by get_expense_daily_breakdown and chat_routes.py's
+    structured card, so both compute byte-identical per-day totals.
+
+    Returns (grouped, currencies_seen, error). `grouped` is
+    {date: {(category, currency): amount}}, insertion-ordered by
+    ascending expense date. `error` is a user-facing message when
+    date/period failed to parse — both other values are empty in that
+    case.
+    """
+    user_id = int(user_id)
+
+    query = build_expense_query(
+        db=db,
+        user_id=user_id,
+        thread_id=thread_id,
+    )
+
+    if date:
+        resolved = resolve_date(date)
+
+        if not resolved:
+            return {}, set(), "Invalid date."
+
+        query = build_expense_query(
+            db=db,
+            user_id=user_id,
+            thread_id=thread_id,
+            date=resolved,
+        )
+
+    elif period:
+        resolved_range = resolve_range(period)
+
+        if not resolved_range:
+            return {}, set(), "Invalid period."
+
+        start, end = resolved_range
+
+        query = build_expense_query(
+            db=db,
+            user_id=user_id,
+            thread_id=thread_id,
+            start_date=start,
+            end_date=end,
+        )
+
+    expenses = query.order_by(Expense.expense_date.asc()).all()
+
+    grouped = {}
+    currencies_seen = set()
+
+    for expense in expenses:
+        day = expense.expense_date.date()
+
+        grouped.setdefault(day, {})
+
+        key = (expense.category, expense.currency)
+        grouped[day].setdefault(key, 0.0)
+        grouped[day][key] += float(expense.amount)
+
+        currencies_seen.add(expense.currency)
+
+    return grouped, currencies_seen, None
+
+
 @tool
 def get_expense_daily_breakdown(
     date: str | None = None,
@@ -638,61 +710,15 @@ def get_expense_daily_breakdown(
     db = SessionLocal()
 
     try:
-        query = build_expense_query(
-            db=db,
-            user_id=int(user_id),
-            thread_id=thread_id,
+        grouped, currencies_seen, error = resolve_expense_daily_breakdown(
+            db, user_id, thread_id, date, period,
         )
 
-        if date:
-            resolved = resolve_date(date)
+        if error:
+            return error
 
-            if not resolved:
-                return "Invalid date."
-
-            query = build_expense_query(
-                db=db,
-                user_id=int(user_id),
-                thread_id=thread_id,
-                date=resolved,
-            )
-
-        elif period:
-            resolved_range = resolve_range(period)
-
-            if not resolved_range:
-                return "Invalid period."
-
-            start, end = resolved_range
-
-            query = build_expense_query(
-                db=db,
-                user_id=int(user_id),
-                thread_id=thread_id,
-                start_date=start,
-                end_date=end,
-            )
-
-        expenses = (
-            query
-            .order_by(Expense.expense_date.asc())
-            .all()
-        )
-
-        if not expenses:
+        if not grouped:
             return "No expenses found for the requested period."
-
-        grouped = {}
-        currencies_seen = {expense.currency for expense in expenses}
-
-        for expense in expenses:
-            day = expense.expense_date.date()
-
-            grouped.setdefault(day, {})
-
-            key = (expense.category, expense.currency)
-            grouped[day].setdefault(key, 0.0)
-            grouped[day][key] += float(expense.amount)
 
         lines = []
 
