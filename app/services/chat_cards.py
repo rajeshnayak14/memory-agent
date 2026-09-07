@@ -96,24 +96,43 @@ def extract_final_reply_text(turn_messages: list) -> str:
     return str(content).strip()
 
 
-def _find_successful_tool_call(turn_messages: list, tool_name: str, predicate=None):
-    """Find the last call to `tool_name` in this turn whose result
-    succeeded. `predicate(args)` optionally filters further (e.g. only a
-    budget_manager call whose action is "status")."""
-    matched_call = None
+def _last_tool_call_round(turn_messages: list) -> list:
+    """The tool_calls list from the LAST AI message in this turn that made
+    any tool calls at all — i.e. the round immediately preceding the
+    turn's final text-only reply.
+
+    A turn can call multiple different tools across several rounds before
+    settling on an answer (e.g. get_expense_breakdown, then realizing the
+    user actually asked for a date-wise view and calling
+    get_expense_daily_breakdown instead). Only the LAST round is what the
+    final answer is actually based on — searching the whole turn for any
+    matching tool call, regardless of round, would let an earlier,
+    superseded call attach the wrong card to a reply that has moved on.
+    """
+    last_round = []
 
     for message in turn_messages:
-        if message.type != "ai" or not getattr(message, "tool_calls", None):
+        if message.type == "ai" and getattr(message, "tool_calls", None):
+            last_round = message.tool_calls
+
+    return last_round
+
+
+def _find_successful_tool_call(turn_messages: list, tool_name: str, predicate=None):
+    """Find a call to `tool_name` in this turn's LAST round of tool calls
+    whose result succeeded (see `_last_tool_call_round`). `predicate(args)`
+    optionally filters further (e.g. only a budget_manager call whose
+    action is "status")."""
+    matched_call = None
+
+    for tool_call in _last_tool_call_round(turn_messages):
+        if tool_call["name"] != tool_name:
             continue
 
-        for tool_call in message.tool_calls:
-            if tool_call["name"] != tool_name:
-                continue
+        if predicate and not predicate(tool_call["args"]):
+            continue
 
-            if predicate and not predicate(tool_call["args"]):
-                continue
-
-            matched_call = tool_call  # last match in the turn wins
+        matched_call = tool_call  # last match in the round wins
 
     if matched_call is None:
         return None
@@ -207,6 +226,19 @@ def find_expense_breakdown_card(
     breakdown so the card stays accurate regardless of what the model
     did.
     """
+    # get_expense_daily_breakdown's output is bullet-shaped the same way
+    # a category breakdown is ("- category: amount"), so the text-based
+    # fallback below can't tell them apart by shape alone — if the last
+    # round called the daily tool, this reply is date-wise, and no
+    # category card belongs here regardless of what the text looks like
+    # or whether an earlier, superseded round also called
+    # get_expense_breakdown.
+    if any(
+        tool_call["name"] == "get_expense_daily_breakdown"
+        for tool_call in _last_tool_call_round(turn_messages)
+    ):
+        return None
+
     breakdown_call = _find_successful_tool_call(turn_messages, "get_expense_breakdown")
 
     if breakdown_call is not None:
