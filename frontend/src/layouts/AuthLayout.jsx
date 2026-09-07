@@ -11,7 +11,7 @@ export default function AuthLayout({ children }) {
     <div className="flex min-h-screen">
       {/* This panel is a fixed dark brand treatment, independent of the
           app's light/dark toggle — not driven by the shared tokens. */}
-      <div className="hidden w-[42%] flex-col justify-between bg-[#141715] px-12 py-14 lg:flex">
+      <div className="hidden w-[42%] flex-col bg-[#141715] px-12 py-14 lg:flex">
         <div className="flex items-center gap-3">
           <img src="/logo.png" alt="Mnemos" className="h-11 w-11" />
           <div>
@@ -22,7 +22,7 @@ export default function AuthLayout({ children }) {
           </div>
         </div>
 
-        <div className="flex flex-col gap-5">
+        <div className="mt-24 flex flex-col gap-5">
           {POINTS.map(({ icon: Icon, text }) => (
             <div key={text} className="flex items-start gap-3">
               <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#2a2f2b] text-[#edf1ec]">
@@ -32,7 +32,6 @@ export default function AuthLayout({ children }) {
             </div>
           ))}
         </div>
-
       </div>
 
       <div className="flex flex-1 flex-col items-center justify-center bg-page px-6 py-14">
