@@ -56,6 +56,7 @@ function normalizeHistory(messages) {
     id: crypto.randomUUID(),
     role: message.role,
     content: message.content,
+    card: message.card || null,
     status: "sent",
     time: nowLabel(),
   }));

@@ -19,6 +19,12 @@ from app.model import (
 from app.schemas.conversation_schemas import (
     ConversationListResponse,
 )
+from app.services.chat_cards import (
+    ChatCard,
+    extract_final_reply_text,
+    find_card_for_turn,
+    segment_into_turns,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +36,7 @@ router = APIRouter(
 class ChatHistoryMessage(BaseModel):
     role: str
     content: str
+    card: ChatCard | None = None
 
 
 class ChatHistoryResponse(BaseModel):
@@ -129,43 +136,37 @@ def get_conversation(
 
     messages = []
 
-    for message in raw_messages:
+    # Reconstructed per-turn rather than scanned once across the whole
+    # thread: a structured card has to be resolved against the SAME
+    # turn's own tool calls (or lack thereof) that produced it, otherwise
+    # a card that appeared on the live response would silently vanish on
+    # reload — which is exactly what a whole-thread, tool-call-agnostic
+    # scan would do, since it has no notion of "which turn" a call
+    # belongs to once everything's flattened into one list.
+    for turn_messages in segment_into_turns(raw_messages):
+        human_message = turn_messages[0]
+        human_content = str(human_message.content).strip()
 
-        if message.type not in ("human", "ai"):
+        if human_content:
+            messages.append({
+                "role": "user",
+                "content": human_content,
+            })
+
+        reply_content = extract_final_reply_text(turn_messages)
+
+        if not reply_content:
             continue
 
-        if message.type == "ai" and getattr(
-            message,
-            "tool_calls",
-            None,
-        ):
-            continue
-
-        content = message.content
-
-        if isinstance(content, list):
-            content = " ".join(
-                item.get("text", "")
-                for item in content
-                if isinstance(item, dict)
-                and item.get("text")
-            )
-
-        content = str(content).strip()
-
-        if not content:
-            continue
-
-        messages.append(
-            {
-                "role": (
-                    "user"
-                    if message.type == "human"
-                    else "assistant"
-                ),
-                "content": content,
-            }
+        card = find_card_for_turn(
+            db, int(user_id), thread_id, turn_messages, reply_content,
         )
+
+        messages.append({
+            "role": "assistant",
+            "content": reply_content,
+            "card": card,
+        })
 
     logger.info(
         "Conversation history retrieved: "
