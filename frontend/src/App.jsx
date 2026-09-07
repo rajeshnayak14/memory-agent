@@ -3,6 +3,7 @@ import { ProtectedRoute, PublicOnlyRoute } from "./components/ProtectedRoute";
 import AppLayout from "./layouts/AppLayout";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
 import Dashboard from "./pages/Dashboard";
 import Chat from "./pages/Chat";
 import Expenses from "./pages/Expenses";
@@ -20,6 +21,7 @@ export default function App() {
       <Route element={<PublicOnlyRoute />}>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
       </Route>
 
       <Route element={<ProtectedRoute />}>

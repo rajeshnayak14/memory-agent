@@ -43,6 +43,8 @@ from app.schemas.auth_schemas import (
     ResendVerificationRequest,
     MessageResponse,
     GoogleSignInRequest,
+    ForgotPasswordRequest,
+    ResetPasswordRequest,
 )
 from app.services.otp import OtpCooldownError, create_and_send_otp, verify_otp_code
 from app.validators import validate_password_strength
@@ -225,6 +227,71 @@ def resend_verification(
         raise EmailDeliveryError(str(err))
 
     return {"message": "A new code has been sent."}
+
+
+@router.post("/auth/forgot-password", response_model=MessageResponse)
+def forgot_password(
+    request: ForgotPasswordRequest,
+    db: Session = Depends(get_db),
+):
+    # Always the same response regardless of whether the account exists,
+    # whether the email actually sent, or whether a code was already
+    # pending — anything else would let an attacker enumerate registered
+    # emails or probe account state from this unauthenticated endpoint.
+    generic_message = (
+        "If an account exists for that email, a password reset code has "
+        "been sent."
+    )
+
+    try:
+        user = db.query(User).filter(User.email == request.email).first()
+
+        if user:
+            try:
+                create_and_send_otp(db, user, purpose="reset_password")
+            except OtpCooldownError:
+                pass
+    except SQLAlchemyError:
+        db.rollback()
+    except Exception:
+        logger.exception(
+            "Failed to send password reset email: email=%s",
+            request.email,
+        )
+
+    return {"message": generic_message}
+
+
+@router.post("/auth/reset-password", response_model=TokenResponse)
+def reset_password(
+    request: ResetPasswordRequest,
+    db: Session = Depends(get_db),
+):
+    try:
+        user = db.query(User).filter(User.email == request.email).first()
+    except SQLAlchemyError:
+        raise DatabaseError("Database operation failed")
+
+    if not user or not verify_otp_code(db, user.id, code=request.code):
+        raise AuthenticationError("Invalid or expired code")
+
+    try:
+        user.password_hash = password_hasher.hash(request.new_password)
+        db.commit()
+    except SQLAlchemyError:
+        db.rollback()
+        raise DatabaseError("Database operation failed")
+
+    access_token = create_access_token(str(user.id))
+    refresh_token = create_refresh_token(str(user.id))
+
+    logger.info("Password reset successful: user_id=%s", user.id)
+
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "token_type": "bearer",
+    }
 
 
 @router.post("/login", response_model=LoginResponse)

@@ -5,6 +5,7 @@ import {
   logoutUser,
   verifyEmail,
   signInWithGoogle,
+  resetPassword,
 } from "../api/auth";
 import { onSessionExpired } from "../api/client";
 import {
@@ -82,6 +83,11 @@ export function AuthProvider({ children }) {
     return settleSession(tokens);
   }, [settleSession]);
 
+  const completePasswordReset = useCallback(async ({ email, code, newPassword }) => {
+    const tokens = await resetPassword({ email, code, newPassword });
+    return settleSession(tokens);
+  }, [settleSession]);
+
   const logout = useCallback(async () => {
     const refreshToken = getRefreshToken();
     try {
@@ -108,10 +114,20 @@ export function AuthProvider({ children }) {
       login,
       completeVerification,
       loginWithGoogle,
+      completePasswordReset,
       logout,
       refreshProfile,
     }),
-    [user, status, login, completeVerification, loginWithGoogle, logout, refreshProfile]
+    [
+      user,
+      status,
+      login,
+      completeVerification,
+      loginWithGoogle,
+      completePasswordReset,
+      logout,
+      refreshProfile,
+    ]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

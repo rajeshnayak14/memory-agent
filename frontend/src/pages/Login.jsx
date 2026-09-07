@@ -135,15 +135,24 @@ export default function Login() {
           required
         />
 
-        <TextField
-          id="password"
-          label="Password"
-          type="password"
-          autoComplete="current-password"
-          value={form.password}
-          onChange={update("password")}
-          required
-        />
+        <div>
+          <TextField
+            id="password"
+            label="Password"
+            type="password"
+            autoComplete="current-password"
+            value={form.password}
+            onChange={update("password")}
+            required
+          />
+
+          <Link
+            to="/forgot-password"
+            className="mt-1.5 inline-block text-xs font-medium text-accent underline-offset-2 hover:underline"
+          >
+            Forgot password?
+          </Link>
+        </div>
 
         {error && (
           <p

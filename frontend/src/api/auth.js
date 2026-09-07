@@ -26,6 +26,22 @@ export function resendVerification(verificationToken) {
     .then((res) => res.data);
 }
 
+export function forgotPassword(email) {
+  return apiClient
+    .post("/auth/forgot-password", { email })
+    .then((res) => res.data);
+}
+
+export function resetPassword({ email, code, newPassword }) {
+  return apiClient
+    .post("/auth/reset-password", {
+      email,
+      code,
+      new_password: newPassword,
+    })
+    .then((res) => res.data);
+}
+
 export function signInWithGoogle(credential) {
   return apiClient
     .post("/auth/google", { credential })

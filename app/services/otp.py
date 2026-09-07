@@ -35,7 +35,7 @@ def _hash_code(code: str) -> str:
     return hashlib.sha256(f"{SECRET_KEY}:{code}".encode()).hexdigest()
 
 
-def create_and_send_otp(db: Session, user: User) -> None:
+def create_and_send_otp(db: Session, user: User, purpose: str = "verify_email") -> None:
     if not user.email:
         raise ValueError("This account has no email address on file.")
 
@@ -65,16 +65,25 @@ def create_and_send_otp(db: Session, user: User) -> None:
     db.add(otp)
     db.commit()
 
-    subject = "Your Mnemos verification code"
-    body = (
-        f"Your verification code is {code}.\n\n"
-        f"It expires in {OTP_TTL_MINUTES} minutes. If you didn't request "
-        f"this, you can safely ignore this email."
-    )
+    if purpose == "reset_password":
+        subject = "Your Mnemos password reset code"
+        body = (
+            f"Your password reset code is {code}.\n\n"
+            f"It expires in {OTP_TTL_MINUTES} minutes. If you didn't request "
+            f"this, you can safely ignore this email — your password won't "
+            f"be changed."
+        )
+    else:
+        subject = "Your Mnemos verification code"
+        body = (
+            f"Your verification code is {code}.\n\n"
+            f"It expires in {OTP_TTL_MINUTES} minutes. If you didn't request "
+            f"this, you can safely ignore this email."
+        )
 
     send_email(user.email, subject, body)
 
-    logger.info("OTP sent: user_id=%s", user.id)
+    logger.info("OTP sent: user_id=%s purpose=%s", user.id, purpose)
 
 
 def verify_otp_code(db: Session, user_id: int, code: str) -> bool:
