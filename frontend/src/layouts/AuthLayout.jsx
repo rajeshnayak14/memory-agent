@@ -33,7 +33,6 @@ export default function AuthLayout({ children }) {
           ))}
         </div>
 
-        <p className="font-mono text-[11px] text-[#8b938c]">Built on LangGraph &amp; PostgreSQL</p>
       </div>
 
       <div className="flex flex-1 flex-col items-center justify-center bg-page px-6 py-14">
