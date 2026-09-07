@@ -683,7 +683,7 @@ export default function AppLayout() {
         </div>
 
         {!collapsed && (
-          <div className="mt-6 flex-1 overflow-y-auto px-2">
+          <div className="mt-6 min-h-0 flex-1 overflow-y-auto px-2">
             <div className="mb-2 flex items-center justify-between px-3">
               <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-faint">
                 Recent chats
@@ -721,7 +721,11 @@ export default function AppLayout() {
                 </p>
               )}
             </div>
+          </div>
+        )}
 
+        {!collapsed && (
+          <div className="shrink-0 px-2">
             <div className="my-5 border-t border-border" />
 
             <div className="space-y-1">
