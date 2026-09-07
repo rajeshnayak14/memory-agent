@@ -587,7 +587,7 @@ export default function Chat() {
         </div>
 
 
-        <div className="shrink-0 border-t border-border bg-surface px-5 py-4 sm:px-8">
+        <div data-tour="chat-composer" className="shrink-0 border-t border-border bg-surface px-5 py-4 sm:px-8">
 
           <div className="mx-auto max-w-3xl">
 

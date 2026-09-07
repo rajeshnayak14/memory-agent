@@ -21,9 +21,11 @@ import {
   LogOut,
   X,
   ShieldCheck,
+  Sparkles,
 } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
+import { useTour, hasTourBeenSeen } from "../context/TourContext";
 import {
   listConversations,
   deleteConversation,
@@ -31,37 +33,44 @@ import {
 import { getOrCreateThreadId } from "../utils/thread";
 import NotificationBell from "../components/NotificationBell";
 import ThemeToggle from "../components/ThemeToggle";
+import TourOverlay from "../components/TourOverlay";
 
 const NAV_ITEMS = [
   {
     to: "/dashboard",
     label: "Dashboard",
     icon: LayoutDashboard,
+    tourId: "nav-dashboard",
   },
   {
     to: "/expenses",
     label: "Expenses",
     icon: Wallet,
+    tourId: "nav-expenses",
   },
   {
     to: "/categories",
     label: "Categories",
     icon: Tag,
+    tourId: "nav-categories",
   },
   {
     to: "/reports",
     label: "Reports",
     icon: FileBarChart,
+    tourId: "nav-reports",
   },
   {
     to: "/goals",
     label: "Goals",
     icon: Target,
+    tourId: "nav-goals",
   },
   {
     to: "/memories",
     label: "Memories",
     icon: Brain,
+    tourId: "nav-memories",
   },
 ];
 
@@ -161,10 +170,22 @@ function RecentItem({
   );
 }
 
-function AccountMenuPanel({ onNavigate, onLogout, showLogout }) {
+function AccountMenuPanel({ onNavigate, onLogout, onStartTour, showLogout }) {
   return (
     <div className="absolute bottom-full left-0 z-50 mb-2 w-56 overflow-hidden rounded-xl border border-border bg-surface shadow-[0_18px_50px_rgba(32,37,34,0.12)]">
       <div className="p-1.5">
+        <button
+          type="button"
+          onClick={() => {
+            onNavigate();
+            onStartTour();
+          }}
+          className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm text-secondary transition-colors hover:bg-surface-hover hover:text-primary"
+        >
+          <Sparkles size={16} strokeWidth={1.8} />
+          Take a tour
+        </button>
+
         <NavLink
           to="/settings"
           onClick={onNavigate}
@@ -215,7 +236,7 @@ function AccountMenuPanel({ onNavigate, onLogout, showLogout }) {
   );
 }
 
-function UserBlock({ collapsed, onLogout }) {
+function UserBlock({ collapsed, onLogout, onStartTour }) {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const containerRef = useRef(null);
@@ -254,6 +275,7 @@ function UserBlock({ collapsed, onLogout }) {
           <AccountMenuPanel
             onNavigate={closeMenu}
             onLogout={onLogout}
+            onStartTour={onStartTour}
             showLogout
           />
         )}
@@ -293,7 +315,7 @@ function UserBlock({ collapsed, onLogout }) {
       </button>
 
       {open && (
-        <AccountMenuPanel onNavigate={closeMenu} onLogout={onLogout} />
+        <AccountMenuPanel onNavigate={closeMenu} onLogout={onLogout} onStartTour={onStartTour} />
       )}
     </div>
   );
@@ -442,10 +464,18 @@ export default function AppLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
+  const { start: startTour } = useTour();
 
   const navItems = user?.is_admin
     ? [...NAV_ITEMS, ADMIN_NAV_ITEM]
     : NAV_ITEMS;
+
+  useEffect(() => {
+    if (user?.id && !hasTourBeenSeen(user.id)) {
+      startTour(user.id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   const [collapsed, setCollapsed] = useState(false);
   const [conversations, setConversations] =
@@ -700,10 +730,12 @@ export default function AppLayout() {
                   to,
                   label,
                   icon: Icon,
+                  tourId,
                 }) => (
                   <NavLink
                     key={to}
                     to={to}
+                    data-tour={tourId}
                     className={({
                       isActive,
                     }) =>
@@ -734,11 +766,13 @@ export default function AppLayout() {
                 to,
                 label,
                 icon: Icon,
+                tourId,
               }) => (
                 <NavLink
                   key={to}
                   to={to}
                   title={label}
+                  data-tour={tourId}
                   className={({
                     isActive,
                   }) =>
@@ -763,6 +797,7 @@ export default function AppLayout() {
           <UserBlock
             collapsed={collapsed}
             onLogout={logout}
+            onStartTour={() => startTour(user?.id)}
           />
         </div>
       </aside>
@@ -790,6 +825,8 @@ export default function AppLayout() {
           }
         />
       )}
+
+      <TourOverlay />
     </div>
   );
 }
