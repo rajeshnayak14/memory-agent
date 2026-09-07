@@ -57,10 +57,10 @@ function useTargetRect(selector) {
   return rect;
 }
 
-function tooltipPosition(rect, placement) {
+function tooltipPosition(rect, placement, tooltipHeight) {
   if (!rect) {
     return {
-      top: window.innerHeight / 2 - 90,
+      top: window.innerHeight / 2 - tooltipHeight / 2,
       left: window.innerWidth / 2 - TOOLTIP_WIDTH / 2,
     };
   }
@@ -72,7 +72,7 @@ function tooltipPosition(rect, placement) {
     top = rect.top;
     left = rect.right + GAP;
   } else if (placement === "top") {
-    top = rect.top - GAP;
+    top = rect.top - GAP - tooltipHeight;
     left = rect.left + rect.width / 2 - TOOLTIP_WIDTH / 2;
   } else if (placement === "bottom") {
     top = rect.bottom + GAP;
@@ -83,7 +83,7 @@ function tooltipPosition(rect, placement) {
   }
 
   left = Math.max(12, Math.min(left, window.innerWidth - TOOLTIP_WIDTH - 12));
-  top = Math.max(12, Math.min(top, window.innerHeight - 12));
+  top = Math.max(12, Math.min(top, window.innerHeight - tooltipHeight - 12));
 
   return { top, left };
 }
@@ -103,12 +103,7 @@ export default function TourOverlay() {
   if (!isActive || !step) return null;
 
   const placement = step.placement === "top" ? "top" : step.placement;
-  let { top, left } = tooltipPosition(rect, placement);
-
-  if (placement === "top") {
-    top -= tooltipHeight;
-    top = Math.max(12, top);
-  }
+  const { top, left } = tooltipPosition(rect, placement, tooltipHeight);
 
   const isLast = stepIndex === totalSteps - 1;
 
