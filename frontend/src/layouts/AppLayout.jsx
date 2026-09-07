@@ -98,8 +98,8 @@ function Brand({ collapsed }) {
           Mnemos
         </p>
 
-        <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted">
-          Your AI Finance Assistant
+        <p className="whitespace-nowrap font-mono text-[9px] uppercase tracking-[0.05em] text-muted">
+          AI Finance Assistant
         </p>
       </div>
     </div>
