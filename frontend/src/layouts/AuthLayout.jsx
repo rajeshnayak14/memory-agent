@@ -15,7 +15,7 @@ export default function AuthLayout({ children }) {
         <div className="flex items-center gap-3">
           <img src="/logo.png" alt="Mnemos" className="h-11 w-11" />
           <div>
-            <p className="text-xl font-semibold tracking-tight text-[#edf1ec]">Mnemos</p>
+            <p className="font-brand text-lg tracking-wide text-[#edf1ec]">Mnemos</p>
             <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.16em] text-[#8b938c]">
               Your AI Finance Assistant
             </p>
@@ -40,7 +40,7 @@ export default function AuthLayout({ children }) {
         <div className="mb-10 flex items-center gap-3 lg:hidden">
           <img src="/logo.png" alt="Mnemos" className="h-9 w-9" />
           <div>
-            <p className="text-lg font-semibold tracking-tight text-primary">Mnemos</p>
+            <p className="font-brand text-base tracking-wide text-primary">Mnemos</p>
             <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.14em] text-faint">
               Your AI Finance Assistant
             </p>

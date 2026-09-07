@@ -94,7 +94,7 @@ function Brand({ collapsed }) {
       <img src="/logo.png" alt="Mnemos" className="h-8 w-8 shrink-0" />
 
       <div>
-        <p className="text-[17px] font-semibold tracking-tight text-primary">
+        <p className="font-brand text-[15px] tracking-wide text-primary">
           Mnemos
         </p>
 

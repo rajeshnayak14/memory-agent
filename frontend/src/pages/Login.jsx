@@ -15,7 +15,7 @@ function BrandHeader() {
       <img src="/logo.png" alt="Mnemos" className="h-10 w-10" />
 
       <div>
-        <p className="text-base font-semibold tracking-tight text-primary">
+        <p className="font-brand text-sm tracking-wide text-primary">
           Mnemos
         </p>
         <p className="font-mono text-[9px] uppercase tracking-[0.13em] text-muted">

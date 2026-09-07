@@ -80,6 +80,7 @@ export default {
           "Consolas",
           "monospace",
         ],
+        brand: ['"Wallpoet"', "ui-sans-serif", "sans-serif"],
       },
       boxShadow: {
         panel: "0 1px 2px 0 rgba(27, 26, 22, 0.04)",
