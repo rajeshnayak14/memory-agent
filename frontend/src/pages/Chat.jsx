@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   MessageSquare,
   Send,
+  Square,
   SquarePen,
 } from "lucide-react";
 
@@ -97,6 +98,7 @@ export default function Chat() {
 
   const bottomRef = useRef(null);
   const textareaRef = useRef(null);
+  const abortControllerRef = useRef(null);
 
 
   /*
@@ -285,6 +287,8 @@ export default function Chat() {
     userMessage,
     activeThreadId = threadId
   ) => {
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
     setSending(true);
 
     try {
@@ -292,6 +296,7 @@ export default function Chat() {
         await sendChatMessage({
           threadId: activeThreadId,
           message: userMessage.content,
+          signal: controller.signal,
         });
 
       setMessages((prev) => [
@@ -319,6 +324,20 @@ export default function Chat() {
         )
       );
     } catch (err) {
+      if (err.code === "ERR_CANCELED") {
+        // The agent may still finish and persist its reply server-side —
+        // we just stop waiting for/showing it. The user's own message did
+        // go through, so it stays marked as sent rather than errored.
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === userMessage.id
+              ? { ...m, status: "sent" }
+              : m
+          )
+        );
+        return;
+      }
+
       setMessages((prev) =>
         prev.map((m) =>
           m.id === userMessage.id
@@ -336,7 +355,46 @@ export default function Chat() {
       );
     } finally {
       setSending(false);
+      abortControllerRef.current = null;
     }
+  };
+
+
+  /*
+   * Stop generating.
+   */
+  const handleStop = () => {
+    abortControllerRef.current?.abort();
+  };
+
+
+  /*
+   * Edit a previously sent message: drop it and everything after it from
+   * view, then resend the edited content on the same thread — the same
+   * pipeline a normal send uses, just starting mid-conversation. This is a
+   * local/visual regeneration only: the original message and whatever
+   * followed it still exist in the backend's append-only thread history,
+   * so a hard reload (or reopening this thread from a link) will show the
+   * pre-edit messages again.
+   */
+  const handleEditSubmit = (message, newContent) => {
+    if (sending || loadingHistory) return;
+
+    const index = messages.findIndex((m) => m.id === message.id);
+    if (index === -1) return;
+
+    const editedMessage = {
+      ...message,
+      content: newContent,
+      status: "sending",
+    };
+
+    setMessages((prev) => [
+      ...prev.slice(0, index),
+      editedMessage,
+    ]);
+
+    deliver(editedMessage);
   };
 
 
@@ -573,6 +631,7 @@ export default function Chat() {
                     key={message.id}
                     message={message}
                     onRetry={handleRetry}
+                    onEditSubmit={handleEditSubmit}
                   />
                 ))}
 
@@ -607,19 +666,27 @@ export default function Chat() {
 
                 <button
                   type="button"
-                  onClick={handleSend}
+                  onClick={sending ? handleStop : handleSend}
                   disabled={
-                    !input.trim() ||
-                    sending ||
-                    loadingHistory
+                    sending
+                      ? false
+                      : !input.trim() || loadingHistory
                   }
-                  aria-label="Send message"
+                  aria-label={sending ? "Stop generating" : "Send message"}
                   className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent text-white transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:bg-border-strong disabled:text-faint"
                 >
-                  <Send
-                    size={16}
-                    strokeWidth={1.9}
-                  />
+                  {sending ? (
+                    <Square
+                      size={13}
+                      strokeWidth={2}
+                      fill="currentColor"
+                    />
+                  ) : (
+                    <Send
+                      size={16}
+                      strokeWidth={1.9}
+                    />
+                  )}
                 </button>
 
               </div>
