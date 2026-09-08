@@ -26,39 +26,52 @@ export default function ChatSidePanel({ threadId }) {
     if (!threadId) return;
 
     let cancelled = false;
-    setLoading(true);
 
-    Promise.all([
-      listBudgets({ thread_id: threadId }),
-      listExpenses({ thread_id: threadId }),
-      getExpenseBreakdown({ thread_id: threadId }),
-    ])
-      .then(([budgetData, expenseData, breakdownData]) => {
-        if (cancelled) return;
+    const load = ({ showSpinner } = {}) => {
+      if (showSpinner) setLoading(true);
 
-        // Most recently created active budget for this thread — the same
-        // one budget_manager(status) would resolve without explicit dates.
-        setBudget(budgetData.budgets[0] || null);
-        setRecentExpenses(expenseData.expenses.slice(0, 4));
+      Promise.all([
+        listBudgets({ thread_id: threadId }),
+        listExpenses({ thread_id: threadId }),
+        getExpenseBreakdown({ thread_id: threadId }),
+      ])
+        .then(([budgetData, expenseData, breakdownData]) => {
+          if (cancelled) return;
 
-        const sorted = [...breakdownData.breakdown].sort(
-          (a, b) => b.amount - a.amount
-        );
-        setTopCategories(sorted.slice(0, 4));
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setBudget(null);
-          setRecentExpenses([]);
-          setTopCategories([]);
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+          // Most recently created active budget for this thread — the same
+          // one budget_manager(status) would resolve without explicit dates.
+          setBudget(budgetData.budgets[0] || null);
+          setRecentExpenses(expenseData.expenses.slice(0, 4));
+
+          const sorted = [...breakdownData.breakdown].sort(
+            (a, b) => b.amount - a.amount
+          );
+          setTopCategories(sorted.slice(0, 4));
+        })
+        .catch(() => {
+          if (!cancelled) {
+            setBudget(null);
+            setRecentExpenses([]);
+            setTopCategories([]);
+          }
+        })
+        .finally(() => {
+          if (!cancelled) setLoading(false);
+        });
+    };
+
+    load({ showSpinner: true });
+
+    // Every add/edit/delete of an expense or budget goes through a chat
+    // send, which fires this same event the sidebar's conversation list
+    // already listens for — reuse it so this panel reflects the change
+    // immediately instead of only on the next thread switch or reload.
+    const handleUpdate = () => load({ showSpinner: false });
+    window.addEventListener("mnemos:conversation-updated", handleUpdate);
 
     return () => {
       cancelled = true;
+      window.removeEventListener("mnemos:conversation-updated", handleUpdate);
     };
   }, [threadId]);
 

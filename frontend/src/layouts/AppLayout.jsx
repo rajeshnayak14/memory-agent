@@ -91,18 +91,12 @@ function Brand({ collapsed }) {
   }
 
   return (
-    <div className="flex items-center gap-2.5 px-2">
+    <div className="flex items-center gap-3 px-2">
       <img src="/logo.png" alt="Mnemos" className="h-8 w-8 shrink-0" />
 
-      <div>
-        <p className="font-brand text-[15px] tracking-wide text-primary">
-          Mnemos
-        </p>
-
-        <p className="whitespace-nowrap font-mono text-[9px] uppercase tracking-[0.05em] text-accent">
-          AI Finance Assistant
-        </p>
-      </div>
+      <p className="font-brand text-2xl tracking-wide text-primary">
+        Mnemos
+      </p>
     </div>
   );
 }
