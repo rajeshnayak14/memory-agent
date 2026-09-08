@@ -22,6 +22,7 @@ import {
   X,
   ShieldCheck,
   Sparkles,
+  Menu,
 } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
@@ -478,9 +479,14 @@ export default function AppLayout() {
   }, [user?.id]);
 
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [conversations, setConversations] =
     useState([]);
   const [panel, setPanel] = useState(null);
+
+  useEffect(() => {
+    setMobileNavOpen(false);
+  }, [location.pathname]);
 
   const refreshConversations = () => {
     listConversations()
@@ -612,12 +618,17 @@ export default function AppLayout() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-page text-primary">
+      {mobileNavOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/50 lg:hidden"
+          onClick={() => setMobileNavOpen(false)}
+        />
+      )}
+
       <aside
-        className={`hidden shrink-0 border-r border-border bg-surface transition-[width] duration-200 lg:flex lg:flex-col ${
-          collapsed
-            ? "w-[64px]"
-            : "w-[260px]"
-        }`}
+        className={`fixed inset-y-0 left-0 z-40 flex w-[260px] shrink-0 flex-col border-r border-border bg-surface shadow-2xl transition-transform duration-200 lg:static lg:z-auto lg:shadow-none lg:transition-[width] lg:translate-x-0 ${
+          mobileNavOpen ? "translate-x-0" : "-translate-x-full"
+        } ${collapsed ? "lg:w-[64px]" : "lg:w-[260px]"}`}
       >
         <div
           className={`flex h-16 items-center ${
@@ -667,18 +678,20 @@ export default function AppLayout() {
             icon={Search}
             label="Search"
             collapsed={collapsed}
-            onClick={() =>
-              setPanel("search")
-            }
+            onClick={() => {
+              setPanel("search");
+              setMobileNavOpen(false);
+            }}
           />
 
           <SidebarButton
             icon={Clock3}
             label="Recents"
             collapsed={collapsed}
-            onClick={() =>
-              setPanel("recents")
-            }
+            onClick={() => {
+              setPanel("recents");
+              setMobileNavOpen(false);
+            }}
           />
         </div>
 
@@ -806,9 +819,24 @@ export default function AppLayout() {
         </div>
       </aside>
 
-      <main className="min-h-0 min-w-0 flex-1 overflow-y-auto">
-        <Outlet />
-      </main>
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <div className="flex h-14 shrink-0 items-center gap-3 border-b border-border bg-surface px-4 lg:hidden">
+          <button
+            type="button"
+            onClick={() => setMobileNavOpen(true)}
+            aria-label="Open menu"
+            className="rounded-lg p-2 text-secondary transition-colors hover:bg-surface-hover hover:text-primary"
+          >
+            <Menu size={20} strokeWidth={1.8} />
+          </button>
+
+          <Brand collapsed={false} />
+        </div>
+
+        <main className="min-h-0 min-w-0 flex-1 overflow-y-auto">
+          <Outlet />
+        </main>
+      </div>
 
       {panel === "search" && (
         <SearchPanel
