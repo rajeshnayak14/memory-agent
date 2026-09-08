@@ -9,23 +9,6 @@ import VerifyEmailStep from "../components/VerifyEmailStep";
 import { useAuth } from "../context/AuthContext";
 import { getErrorMessage } from "../utils/errorMessage";
 
-function BrandHeader() {
-  return (
-    <div className="mb-7 flex items-center gap-3">
-      <img src="/logo.png" alt="Mnemos" className="h-10 w-10" />
-
-      <div>
-        <p className="font-brand text-sm tracking-wide text-primary">
-          Mnemos
-        </p>
-        <p className="font-mono text-[9px] uppercase tracking-[0.13em] text-muted">
-          Your AI Finance Assistant
-        </p>
-      </div>
-    </div>
-  );
-}
-
 export default function Login() {
   const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
@@ -95,7 +78,6 @@ export default function Login() {
   if (verificationToken) {
     return (
       <AuthLayout>
-        <BrandHeader />
         <VerifyEmailStep
           verificationToken={verificationToken}
           onVerified={goToRedirect}
@@ -106,8 +88,6 @@ export default function Login() {
 
   return (
     <AuthLayout>
-      <BrandHeader />
-
       <h1 className="text-xl font-semibold tracking-tight text-primary">
         Sign in
       </h1>

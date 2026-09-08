@@ -9,23 +9,6 @@ import { forgotPassword } from "../api/auth";
 import { isPasswordValid, PASSWORD_REQUIREMENT } from "../utils/password";
 import { getErrorMessage } from "../utils/errorMessage";
 
-function BrandHeader() {
-  return (
-    <div className="mb-7 flex items-center gap-3">
-      <img src="/logo.png" alt="Mnemos" className="h-10 w-10" />
-
-      <div>
-        <p className="font-brand text-sm tracking-wide text-primary">
-          Mnemos
-        </p>
-        <p className="font-mono text-[9px] uppercase tracking-[0.13em] text-muted">
-          Your AI Finance Assistant
-        </p>
-      </div>
-    </div>
-  );
-}
-
 function RequestCodeStep({ onSent }) {
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -218,8 +201,6 @@ export default function ForgotPassword() {
 
   return (
     <AuthLayout>
-      <BrandHeader />
-
       {email ? (
         <ResetPasswordStep email={email} />
       ) : (
