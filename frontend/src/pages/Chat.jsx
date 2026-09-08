@@ -530,11 +530,11 @@ export default function Chat() {
 
 
   return (
-    <div className="flex h-screen min-h-0 bg-page text-primary">
+    <div className="flex h-full min-h-0 bg-page text-primary">
 
       <div className="flex min-h-0 flex-1 flex-col">
 
-        <header className="flex shrink-0 items-center justify-between border-b border-border bg-surface px-6 py-3.5 sm:px-10">
+        <header className="flex shrink-0 items-center justify-between gap-2 border-b border-border bg-surface px-4 py-3 sm:px-10 sm:py-3.5">
 
           <div className="flex min-w-0 items-center gap-3">
 
@@ -546,11 +546,11 @@ export default function Chat() {
             </div>
 
             <div className="min-w-0">
-              <h1 className="text-[15px] font-semibold tracking-tight text-primary">
+              <h1 className="truncate text-[15px] font-semibold tracking-tight text-primary">
                 Chat
               </h1>
 
-              <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-faint">
+              <p className="hidden font-mono text-[10px] uppercase tracking-[0.12em] text-faint sm:block">
                 Ask, log expenses, or check your budget
               </p>
             </div>
@@ -562,8 +562,9 @@ export default function Chat() {
             size="sm"
             icon={SquarePen}
             onClick={handleNewConversation}
+            className="shrink-0 px-2.5 sm:px-3"
           >
-            New conversation
+            <span className="hidden sm:inline">New conversation</span>
           </Button>
 
         </header>
@@ -646,7 +647,7 @@ export default function Chat() {
         </div>
 
 
-        <div data-tour="chat-composer" className="shrink-0 border-t border-border bg-surface px-5 py-4 sm:px-8">
+        <div data-tour="chat-composer" className="shrink-0 border-t border-border bg-surface px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 sm:px-8">
 
           <div className="mx-auto max-w-3xl">
 

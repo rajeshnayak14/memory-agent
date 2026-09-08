@@ -611,7 +611,7 @@ export default function AppLayout() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-page text-primary">
+    <div className="flex h-dvh overflow-hidden bg-page text-primary">
       {mobileNavOpen && (
         <div
           className="fixed inset-0 z-30 bg-black/50 lg:hidden"
@@ -620,15 +620,13 @@ export default function AppLayout() {
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-[260px] shrink-0 flex-col border-r border-border bg-surface shadow-2xl transition-transform duration-200 lg:static lg:z-auto lg:shadow-none lg:transition-[width] lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-[82vw] max-w-[640px] shrink-0 flex-col border-r border-border bg-surface shadow-2xl transition-transform duration-200 lg:static lg:z-auto lg:max-w-none lg:shadow-none lg:transition-[width] lg:translate-x-0 ${
           mobileNavOpen ? "translate-x-0" : "-translate-x-full"
         } ${collapsed ? "lg:w-[64px]" : "lg:w-[260px]"}`}
       >
         <div
-          className={`flex h-16 items-center ${
-            collapsed
-              ? "justify-center"
-              : "justify-between px-3"
+          className={`flex h-16 items-center justify-between px-3 ${
+            collapsed ? "lg:justify-center lg:px-0" : ""
           }`}
         >
           <Brand collapsed={collapsed} />
@@ -640,7 +638,7 @@ export default function AppLayout() {
                 setCollapsed(true)
               }
               title="Collapse sidebar"
-              className="rounded-lg p-2 text-muted transition-colors hover:bg-surface-hover hover:text-primary"
+              className="hidden rounded-lg p-2 text-muted transition-colors hover:bg-surface-hover hover:text-primary lg:block"
             >
               <PanelLeft size={18} />
             </button>
@@ -654,7 +652,7 @@ export default function AppLayout() {
               setCollapsed(false)
             }
             title="Open sidebar"
-            className="mx-auto mb-3 rounded-lg p-2 text-secondary transition-colors hover:bg-surface-hover hover:text-primary"
+            className="mx-auto mb-3 hidden rounded-lg p-2 text-secondary transition-colors hover:bg-surface-hover hover:text-primary lg:block"
           >
             <PanelLeft size={18} />
           </button>
@@ -690,7 +688,7 @@ export default function AppLayout() {
         </div>
 
         {!collapsed && (
-          <div className="mt-6 min-h-0 flex-1 overflow-y-auto px-2">
+          <div className="mt-6 max-h-[32vh] min-h-0 overflow-y-auto px-2 lg:max-h-none lg:flex-1">
             <div className="mb-2 flex items-center justify-between px-3">
               <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-faint">
                 Recent chats
@@ -817,7 +815,14 @@ export default function AppLayout() {
         <div className="flex h-14 shrink-0 items-center gap-3 border-b border-border bg-surface px-4 lg:hidden">
           <button
             type="button"
-            onClick={() => setMobileNavOpen(true)}
+            onClick={() => {
+              // The desktop icon-only "collapsed" mode has no meaning on
+              // mobile (the drawer has no room for it) — reset it so a
+              // collapsed state left over from a desktop-width session
+              // can never bleed into the mobile drawer's layout.
+              setCollapsed(false);
+              setMobileNavOpen(true);
+            }}
             aria-label="Open menu"
             className="rounded-lg p-2 text-secondary transition-colors hover:bg-surface-hover hover:text-primary"
           >
