@@ -113,7 +113,7 @@ function SidebarButton({
       type="button"
       onClick={onClick}
       title={collapsed ? label : undefined}
-      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
+      className={`flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm transition-colors ${
         collapsed ? "justify-center px-0" : ""
       } ${
         active
@@ -137,7 +137,7 @@ function RecentItem({
   if (collapsed) return null;
 
   return (
-    <div className="group flex w-full items-center gap-2 rounded-lg px-3 py-2 text-[13px] text-secondary transition-colors hover:bg-surface-hover hover:text-primary">
+    <div className="group flex w-full items-center gap-2 rounded-2xl px-3 py-2 text-[13px] text-secondary transition-colors hover:bg-surface-hover hover:text-primary">
       <button
         type="button"
         onClick={onClick}
@@ -175,7 +175,7 @@ function AccountMenuPanel({ onNavigate, onLogout, onStartTour, showLogout }) {
             onNavigate();
             onStartTour();
           }}
-          className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm text-secondary transition-colors hover:bg-surface-hover hover:text-primary"
+          className="flex w-full items-center gap-2.5 rounded-2xl px-3 py-2 text-left text-sm text-secondary transition-colors hover:bg-surface-hover hover:text-primary"
         >
           <Sparkles size={16} strokeWidth={1.8} />
           Take a tour
@@ -185,7 +185,7 @@ function AccountMenuPanel({ onNavigate, onLogout, onStartTour, showLogout }) {
           to="/settings"
           onClick={onNavigate}
           className={({ isActive }) =>
-            `flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors ${
+            `flex items-center gap-2.5 rounded-2xl px-3 py-2 text-sm transition-colors ${
               isActive
                 ? "bg-accent-subtle text-accent"
                 : "text-secondary hover:bg-surface-hover hover:text-primary"
@@ -200,7 +200,7 @@ function AccountMenuPanel({ onNavigate, onLogout, onStartTour, showLogout }) {
           to="/profile"
           onClick={onNavigate}
           className={({ isActive }) =>
-            `flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors ${
+            `flex items-center gap-2.5 rounded-2xl px-3 py-2 text-sm transition-colors ${
               isActive
                 ? "bg-accent-subtle text-accent"
                 : "text-secondary hover:bg-surface-hover hover:text-primary"
@@ -215,7 +215,7 @@ function AccountMenuPanel({ onNavigate, onLogout, onStartTour, showLogout }) {
           <button
             type="button"
             onClick={onLogout}
-            className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm text-secondary transition-colors hover:bg-surface-hover hover:text-primary"
+            className="flex w-full items-center gap-2.5 rounded-2xl px-3 py-2 text-left text-sm text-secondary transition-colors hover:bg-surface-hover hover:text-primary"
           >
             <LogOut size={16} strokeWidth={1.8} />
             Log out
@@ -279,7 +279,7 @@ function UserBlock({ collapsed, onLogout, onStartTour }) {
   }
 
   return (
-    <div ref={containerRef} className="relative flex items-center gap-3 rounded-lg px-2 py-2">
+    <div ref={containerRef} className="relative flex items-center gap-3 rounded-2xl px-2 py-2">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -371,7 +371,7 @@ function SearchPanel({
                 onClick={() =>
                   onSelect(conversation)
                 }
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-sm text-secondary transition-colors hover:bg-surface-hover hover:text-primary"
+                className="flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left text-sm text-secondary transition-colors hover:bg-surface-hover hover:text-primary"
               >
                 <Clock3
                   size={16}
@@ -439,7 +439,7 @@ function RecentsPanel({
                 onClick={() =>
                   onSelect(conversation)
                 }
-                className="group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-secondary transition-colors hover:bg-surface-hover hover:text-primary"
+                className="group flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm text-secondary transition-colors hover:bg-surface-hover hover:text-primary"
               >
                 <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-faint group-hover:bg-accent" />
 
@@ -638,7 +638,7 @@ export default function AppLayout() {
                 setCollapsed(true)
               }
               title="Collapse sidebar"
-              className="hidden rounded-lg p-2 text-muted transition-colors hover:bg-surface-hover hover:text-primary lg:block"
+              className="hidden rounded-2xl p-2 text-muted transition-colors hover:bg-surface-hover hover:text-primary lg:block"
             >
               <PanelLeft size={18} />
             </button>
@@ -652,7 +652,7 @@ export default function AppLayout() {
               setCollapsed(false)
             }
             title="Open sidebar"
-            className="mx-auto mb-3 hidden rounded-lg p-2 text-secondary transition-colors hover:bg-surface-hover hover:text-primary lg:block"
+            className="mx-auto mb-3 hidden rounded-2xl p-2 text-secondary transition-colors hover:bg-surface-hover hover:text-primary lg:block"
           >
             <PanelLeft size={18} />
           </button>
@@ -748,7 +748,7 @@ export default function AppLayout() {
                     className={({
                       isActive,
                     }) =>
-                      `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
+                      `flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm transition-colors ${
                         isActive
                           ? "bg-accent-subtle text-accent"
                           : "text-secondary hover:bg-surface-hover hover:text-primary"
@@ -785,7 +785,7 @@ export default function AppLayout() {
                   className={({
                     isActive,
                   }) =>
-                    `flex h-10 w-10 items-center justify-center rounded-lg transition-colors ${
+                    `flex h-10 w-10 items-center justify-center rounded-2xl transition-colors ${
                       isActive
                         ? "bg-accent-subtle text-accent"
                         : "text-secondary hover:bg-surface-hover hover:text-primary"
@@ -824,7 +824,7 @@ export default function AppLayout() {
               setMobileNavOpen(true);
             }}
             aria-label="Open menu"
-            className="rounded-lg p-2 text-secondary transition-colors hover:bg-surface-hover hover:text-primary"
+            className="rounded-2xl p-2 text-secondary transition-colors hover:bg-surface-hover hover:text-primary"
           >
             <Menu size={20} strokeWidth={1.8} />
           </button>
