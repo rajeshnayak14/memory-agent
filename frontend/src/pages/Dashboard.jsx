@@ -160,7 +160,7 @@ export default function Dashboard() {
         </header>
 
 
-        <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_320px]">
+        <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
 
           <div className="flex flex-col gap-6">
 
@@ -240,7 +240,7 @@ export default function Dashboard() {
                             key={memory.key}
                             className="flex items-start justify-between gap-4 rounded-2xl bg-surface-subtle p-4"
                           >
-                            <div className="flex min-w-0 items-start gap-2.5">
+                            <div className="flex min-w-0 flex-1 items-start gap-2.5">
                               <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-success" />
 
                               <p className="min-w-0 flex-1 truncate text-sm text-secondary">
