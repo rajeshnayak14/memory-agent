@@ -676,15 +676,17 @@ export default function AppLayout() {
             }}
           />
 
-          <SidebarButton
-            icon={Clock3}
-            label="Recents"
-            collapsed={collapsed}
-            onClick={() => {
-              setPanel("recents");
-              setMobileNavOpen(false);
-            }}
-          />
+          {collapsed && (
+            <SidebarButton
+              icon={Clock3}
+              label="Recents"
+              collapsed={collapsed}
+              onClick={() => {
+                setPanel("recents");
+                setMobileNavOpen(false);
+              }}
+            />
+          )}
         </div>
 
         {!collapsed && (
