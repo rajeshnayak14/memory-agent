@@ -137,7 +137,7 @@ function RecentItem({
   if (collapsed) return null;
 
   return (
-    <div className="group flex w-full items-center gap-2 rounded-2xl px-3 py-2 text-[13px] text-secondary transition-colors hover:bg-surface-hover hover:text-primary">
+    <div className="group flex w-full items-center gap-2 rounded-2xl px-3 py-2 text-sm text-secondary transition-colors hover:bg-surface-hover hover:text-primary">
       <button
         type="button"
         onClick={onClick}
@@ -690,7 +690,7 @@ export default function AppLayout() {
         {!collapsed && (
           <div className="mt-6 max-h-[32vh] min-h-0 overflow-y-auto px-2 lg:max-h-none lg:flex-1">
             <div className="mb-2 flex items-center justify-between px-3">
-              <p className="text-xs text-faint">
+              <p className="text-sm text-muted">
                 Recent chats
               </p>
 
