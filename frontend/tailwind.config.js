@@ -48,6 +48,10 @@ export default {
         warn: {
           DEFAULT: withOpacity("--warn"),
         },
+        warm: {
+          DEFAULT: withOpacity("--accent-warm"),
+          subtle: withOpacity("--accent-warm-subtle-bg"),
+        },
 
         // Plain aliases used by the arbitrary-hex -> token sweep.
         page: withOpacity("--bg-page"),
@@ -81,10 +85,12 @@ export default {
           "monospace",
         ],
         brand: ['"Wallpoet"', "ui-sans-serif", "sans-serif"],
+        heading: ['"Sora"', '"IBM Plex Sans"', "ui-sans-serif", "sans-serif"],
       },
       boxShadow: {
         panel: "0 1px 2px 0 rgba(27, 26, 22, 0.04)",
         raised: "0 2px 8px 0 rgba(27, 26, 22, 0.08)",
+        soft: "0 14px 34px 0 rgba(90, 74, 46, 0.08)",
       },
     },
   },

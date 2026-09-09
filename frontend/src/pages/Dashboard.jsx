@@ -25,18 +25,24 @@ function QuickAction({
   icon: Icon,
   title,
   description,
+  tint = "accent",
 }) {
+  const badgeClass =
+    tint === "warm"
+      ? "bg-warm-subtle text-warm"
+      : "bg-accent-subtle text-accent";
+
   return (
     <Link
       to={to}
-      className="group flex items-start gap-3 rounded-xl border border-border bg-surface p-4 transition-colors hover:border-success hover:bg-surface-hover"
+      className="group flex items-start gap-3 rounded-3xl border border-border bg-surface p-5 shadow-soft transition-colors hover:bg-surface-hover dark:shadow-none"
     >
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-accent-border bg-accent-subtle text-accent">
+      <div className={`icon-blob flex h-10 w-10 shrink-0 items-center justify-center ${badgeClass}`}>
         <Icon size={16} strokeWidth={1.9} />
       </div>
 
       <div className="flex-1">
-        <p className="text-sm font-medium text-primary">
+        <p className="font-heading text-sm font-semibold text-primary">
           {title}
         </p>
 
@@ -127,11 +133,11 @@ export default function Dashboard() {
         <header className="flex items-start justify-between gap-5">
 
           <div>
-            <p className="mb-1 font-mono text-[10px] uppercase tracking-[0.15em] text-muted">
+            <p className="mb-1 text-sm text-muted">
               Personal finance overview
             </p>
 
-            <h1 className="text-xl font-semibold tracking-tight text-primary">
+            <h1 className="font-heading text-2xl font-semibold tracking-tight text-primary">
               Welcome back, {user.username}
             </h1>
 
@@ -140,13 +146,13 @@ export default function Dashboard() {
             </p>
           </div>
 
-          <div className="hidden items-center gap-2 rounded-lg border border-accent-border bg-accent-subtle px-3 py-2 sm:flex">
+          <div className="hidden items-center gap-2 rounded-full border border-accent-border bg-accent-subtle px-4 py-2 sm:flex">
             <Activity
               size={14}
               className="text-accent"
               strokeWidth={1.8}
             />
-            <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-accent">
+            <span className="text-xs font-medium text-accent">
               Agent active
             </span>
           </div>
@@ -159,19 +165,19 @@ export default function Dashboard() {
           <div className="flex flex-col gap-6">
 
             {/* Memory overview */}
-            <section className="overflow-hidden rounded-xl border border-border bg-surface shadow-[0_4px_16px_rgba(32,37,34,0.03)]">
+            <section className="overflow-hidden rounded-3xl border border-border bg-surface shadow-soft dark:shadow-none">
 
-              <div className="flex items-center justify-between border-b border-border px-5 py-4">
+              <div className="flex items-center justify-between border-b border-border px-6 py-5">
 
-                <div className="flex items-center gap-2.5">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent-subtle text-accent">
+                <div className="flex items-center gap-3">
+                  <div className="icon-blob flex h-9 w-9 items-center justify-center bg-accent-subtle text-accent">
                     <Brain
-                      size={14}
+                      size={16}
                       strokeWidth={1.8}
                     />
                   </div>
 
-                  <h2 className="text-sm font-semibold text-primary">
+                  <h2 className="font-heading text-base font-semibold text-primary">
                     Memory overview
                   </h2>
                 </div>
@@ -203,51 +209,53 @@ export default function Dashboard() {
 
               ) : (
 
-                <div className="p-5">
+                <div className="p-6">
 
                   <div className="flex items-end gap-3">
-                    <p className="font-mono text-4xl font-semibold tracking-tight text-primary">
+                    <p className="font-heading text-5xl font-bold tracking-tight text-accent">
                       {memories.length}
                     </p>
 
                     <p className="pb-1 text-sm text-muted">
                       {memories.length === 1
-                        ? "memory stored"
-                        : "memories stored"}
+                        ? "little memory stored"
+                        : "little memories stored"}
                     </p>
                   </div>
 
-                  <div className="mt-5 border-t border-border">
+                  <div className="mt-6">
 
                     {recentMemories.length === 0 ? (
 
-                      <p className="pt-4 text-sm leading-6 text-muted">
+                      <p className="rounded-2xl bg-surface-subtle p-4 text-sm leading-6 text-muted">
                         Nothing stored yet — start a conversation
                         and Mnemos will save what matters.
                       </p>
 
                     ) : (
 
-                      recentMemories.map((memory) => (
-                        <div
-                          key={memory.key}
-                          className="flex items-start justify-between gap-4 border-b border-border py-3 last:border-b-0"
-                        >
-                          <div className="flex min-w-0 items-start gap-2.5">
-                            <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-success" />
+                      <div className="flex flex-col gap-2">
+                        {recentMemories.map((memory) => (
+                          <div
+                            key={memory.key}
+                            className="flex items-start justify-between gap-4 rounded-2xl bg-surface-subtle p-4"
+                          >
+                            <div className="flex min-w-0 items-start gap-2.5">
+                              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-success" />
 
-                            <p className="min-w-0 flex-1 truncate text-sm text-secondary">
-                              {memory.content}
-                            </p>
+                              <p className="min-w-0 flex-1 truncate text-sm text-secondary">
+                                {memory.content}
+                              </p>
+                            </div>
+
+                            <span className="shrink-0 text-xs text-faint">
+                              {formatRelative(
+                                memory.created_at
+                              )}
+                            </span>
                           </div>
-
-                          <span className="shrink-0 font-mono text-[10px] text-faint">
-                            {formatRelative(
-                              memory.created_at
-                            )}
-                          </span>
-                        </div>
-                      ))
+                        ))}
+                      </div>
 
                     )}
 
@@ -259,19 +267,19 @@ export default function Dashboard() {
 
 
             {/* Spending overview */}
-            <section className="overflow-hidden rounded-xl border border-border bg-surface shadow-[0_4px_16px_rgba(32,37,34,0.03)]">
+            <section className="overflow-hidden rounded-3xl border border-border bg-surface shadow-soft dark:shadow-none">
 
-              <div className="flex items-center justify-between border-b border-border px-5 py-4">
+              <div className="flex items-center justify-between border-b border-border px-6 py-5">
 
-                <div className="flex items-center gap-2.5">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent-subtle text-accent">
+                <div className="flex items-center gap-3">
+                  <div className="icon-blob flex h-9 w-9 items-center justify-center bg-warm-subtle text-warm">
                     <Wallet
-                      size={14}
+                      size={16}
                       strokeWidth={1.8}
                     />
                   </div>
 
-                  <h2 className="text-sm font-semibold text-primary">
+                  <h2 className="font-heading text-base font-semibold text-primary">
                     Spending this month
                   </h2>
                 </div>
@@ -293,7 +301,7 @@ export default function Dashboard() {
 
               ) : spendError ? (
 
-                <div className="p-5">
+                <div className="p-6">
                   <EmptyState
                     icon={AlertTriangle}
                     title="Could not load spending"
@@ -303,7 +311,7 @@ export default function Dashboard() {
 
               ) : (
 
-                <div className="p-5">
+                <div className="p-6">
 
                   {Object.keys(spendTotals).length === 0 ? (
                     <p className="text-sm leading-6 text-muted">
@@ -311,13 +319,13 @@ export default function Dashboard() {
                       expense from the Expenses page or from chat.
                     </p>
                   ) : (
-                    <div className="flex flex-wrap gap-3">
+                    <div className="flex flex-wrap gap-4">
                       {Object.entries(spendTotals).map(([currency, amount]) => (
                         <div key={currency}>
-                          <p className="font-mono text-3xl font-semibold tracking-tight text-primary">
+                          <p className="font-heading text-5xl font-bold tracking-tight text-primary">
                             {formatMoney(amount, currency)}
                           </p>
-                          <p className="text-sm text-muted">
+                          <p className="mt-1 text-sm text-muted">
                             spent in {currency}
                           </p>
                         </div>
@@ -326,21 +334,21 @@ export default function Dashboard() {
                   )}
 
                   {budgets.length > 0 && (
-                    <div className="mt-5 flex flex-col gap-2 border-t border-border pt-4">
+                    <div className="mt-6 flex flex-col gap-4">
                       {budgets.slice(0, 3).map((budget) => (
                         <div key={budget.id}>
                           <div className="flex items-center justify-between text-xs text-muted">
                             <span>{formatMoney(budget.amount, budget.currency)} budget</span>
                             <span>{budget.used_pct.toFixed(0)}%</span>
                           </div>
-                          <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-border">
+                          <div className="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-surface-subtle">
                             <div
                               className={`h-full rounded-full ${
                                 budget.used_pct >= 100
                                   ? "bg-danger"
                                   : budget.used_pct >= 80
                                     ? "bg-warn"
-                                    : "bg-success"
+                                    : "bg-gradient-to-r from-success to-accent"
                               }`}
                               style={{ width: `${Math.min(budget.used_pct, 100)}%` }}
                             />
@@ -360,12 +368,12 @@ export default function Dashboard() {
             <section>
 
               <div className="mb-3 flex items-center gap-2">
-                <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
-                  Actions
+                <p className="text-sm text-muted">
+                  A few things you can do
                 </p>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-4 sm:grid-cols-2">
 
                 <QuickAction
                   to="/chat"
@@ -379,6 +387,7 @@ export default function Dashboard() {
                   icon={Wallet}
                   title="View expenses"
                   description="See spending, budgets, and recurring rules."
+                  tint="warm"
                 />
 
                 <QuickAction
@@ -397,25 +406,26 @@ export default function Dashboard() {
           <div className="flex flex-col gap-6">
 
             {/* Active session */}
-            <section className="rounded-xl border border-border bg-surface p-5 shadow-[0_4px_16px_rgba(32,37,34,0.03)]">
+            <section className="rounded-3xl border border-border bg-surface p-6 shadow-soft dark:shadow-none">
 
-              <div className="flex items-center gap-2">
-                <Activity
-                  size={15}
-                  className="text-accent"
-                  strokeWidth={1.8}
-                />
+              <div className="flex items-center gap-3">
+                <div className="icon-blob flex h-9 w-9 items-center justify-center bg-accent-subtle text-accent">
+                  <Activity
+                    size={16}
+                    strokeWidth={1.8}
+                  />
+                </div>
 
-                <h2 className="text-sm font-semibold text-primary">
+                <h2 className="font-heading text-base font-semibold text-primary">
                   Active session
                 </h2>
               </div>
 
-              <p className="mt-4 text-[11px] uppercase tracking-[0.08em] text-faint">
+              <p className="mt-5 text-xs text-faint">
                 Thread
               </p>
 
-              <p className="mt-1 truncate font-mono text-xs text-secondary">
+              <p className="mt-1 truncate rounded-xl bg-surface-subtle px-3 py-2 font-mono text-xs text-secondary">
                 {threadId}
               </p>
 
@@ -431,17 +441,17 @@ export default function Dashboard() {
 
 
             {/* Account */}
-            <section className="rounded-xl border border-border bg-surface p-5 shadow-[0_4px_16px_rgba(32,37,34,0.03)]">
+            <section className="rounded-3xl border border-border bg-surface p-6 shadow-soft dark:shadow-none">
 
-              <div className="flex items-center gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-surface-subtle text-secondary">
+              <div className="flex items-center gap-3">
+                <div className="icon-blob flex h-9 w-9 items-center justify-center bg-surface-subtle text-secondary">
                   <Database
-                    size={14}
+                    size={16}
                     strokeWidth={1.8}
                   />
                 </div>
 
-                <h2 className="text-sm font-semibold text-primary">
+                <h2 className="font-heading text-base font-semibold text-primary">
                   Account
                 </h2>
               </div>

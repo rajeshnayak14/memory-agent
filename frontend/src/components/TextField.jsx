@@ -27,7 +27,7 @@ export default function TextField({
         <Component
           id={id}
           type={isPassword ? (visible ? "text" : "password") : type}
-          className={`w-full rounded border bg-surface px-3.5 py-2.5 text-sm text-ink-900 outline-none transition-colors placeholder:text-ink-300 ${
+          className={`w-full rounded-2xl border bg-surface px-4 py-2.5 text-sm text-ink-900 outline-none transition-colors placeholder:text-ink-300 ${
             isPassword ? "pr-10" : ""
           } ${
             error

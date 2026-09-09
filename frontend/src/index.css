@@ -29,6 +29,8 @@
   --warn: 192 138 62;
   --primary-hover: 52 58 54;
   --border-focus: 110 141 125;
+  --accent-warm: 194 95 55;
+  --accent-warm-subtle-bg: 251 227 214;
 }
 
 :root.dark {
@@ -53,6 +55,8 @@
   --warn: 214 163 85;
   --primary-hover: 42 48 44;
   --border-focus: 127 163 143;
+  --accent-warm: 224 150 110;
+  --accent-warm-subtle-bg: 58 38 30;
 }
 
 @layer base {
@@ -92,5 +96,14 @@
 
   ::-webkit-scrollbar-corner {
     background: transparent;
+  }
+}
+
+@layer utilities {
+  /* The "Soft Organic" icon badge shape — a gently asymmetric blob rather
+     than a plain rounded square. Kept as one utility so every badge across
+     the app uses the exact same shape. */
+  .icon-blob {
+    border-radius: 42% 58% 63% 37% / 41% 44% 56% 59%;
   }
 }
