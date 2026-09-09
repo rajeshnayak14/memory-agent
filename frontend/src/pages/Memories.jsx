@@ -148,16 +148,16 @@ export default function Memories() {
 
           <div className="flex items-start gap-3.5">
 
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-accent-border bg-accent-subtle text-accent">
+            <div className="icon-blob flex h-10 w-10 shrink-0 items-center justify-center bg-accent-subtle text-accent">
               <Brain size={19} strokeWidth={1.8} />
             </div>
 
             <div>
-              <p className="mb-0.5 font-mono text-[10px] uppercase tracking-[0.15em] text-muted">
+              <p className="mb-0.5 text-sm text-muted">
                 Knowledge store
               </p>
 
-              <h1 className="text-xl font-semibold tracking-tight text-primary">
+              <h1 className="font-heading text-2xl font-semibold tracking-tight text-primary">
                 Memories
               </h1>
 
@@ -202,7 +202,7 @@ export default function Memories() {
 
         {/* Create memory */}
         {creating && (
-          <div className="mt-6 rounded-xl border border-border bg-surface p-4 shadow-[0_4px_16px_rgba(32,37,34,0.04)]">
+          <div className="mt-6 rounded-3xl border border-border bg-surface p-4 shadow-soft dark:shadow-none">
 
             <div className="mb-3 flex items-center gap-2 px-1">
               <Database
@@ -211,7 +211,7 @@ export default function Memories() {
                 strokeWidth={1.8}
               />
 
-              <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
+              <p className="text-sm text-muted">
                 Add to memory
               </p>
             </div>
@@ -234,7 +234,7 @@ export default function Memories() {
         <div className="mt-7">
 
           {loading ? (
-            <div className="flex justify-center rounded-xl border border-border bg-surface py-16">
+            <div className="flex justify-center rounded-3xl border border-border bg-surface py-16">
               <Spinner size={20} />
             </div>
 
@@ -267,7 +267,7 @@ export default function Memories() {
 
           ) : (
 
-            <div className="overflow-hidden rounded-xl border border-border bg-surface shadow-[0_4px_16px_rgba(32,37,34,0.03)]">
+            <div className="overflow-hidden rounded-3xl border border-border bg-surface shadow-soft dark:shadow-none">
 
               <div className="flex items-center justify-between border-b border-border px-4 py-3">
 
@@ -278,7 +278,7 @@ export default function Memories() {
                     strokeWidth={1.8}
                   />
 
-                  <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
+                  <span className="text-sm text-muted">
                     Stored memories
                   </span>
                 </div>

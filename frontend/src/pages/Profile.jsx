@@ -29,10 +29,10 @@ export default function Profile() {
     <div className="min-h-screen bg-page px-6 py-8 sm:px-10 sm:py-10">
       <div className="mx-auto max-w-2xl">
         <header>
-          <p className="mb-1 font-mono text-[10px] uppercase tracking-[0.15em] text-muted">
+          <p className="mb-1 text-sm text-muted">
             Account
           </p>
-          <h1 className="text-xl font-semibold tracking-tight text-primary">
+          <h1 className="font-heading text-2xl font-semibold tracking-tight text-primary">
             Profile
           </h1>
           <p className="mt-1 text-sm text-muted">
@@ -40,8 +40,8 @@ export default function Profile() {
           </p>
         </header>
 
-        <section className="mt-7 flex items-center gap-4 rounded-xl border border-border bg-surface p-5 shadow-[0_4px_16px_rgba(32,37,34,0.03)]">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-accent-border bg-accent-subtle font-mono text-lg font-semibold text-accent">
+        <section className="mt-7 flex items-center gap-4 rounded-3xl border border-border bg-surface p-5 shadow-soft dark:shadow-none">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-3xl border border-accent-border bg-accent-subtle font-mono text-lg font-semibold text-accent">
             {initial}
           </div>
 
@@ -62,10 +62,10 @@ export default function Profile() {
           </div>
         </section>
 
-        <section className="mt-6 overflow-hidden rounded-xl border border-border bg-surface shadow-[0_4px_16px_rgba(32,37,34,0.03)]">
+        <section className="mt-6 overflow-hidden rounded-3xl border border-border bg-surface shadow-soft dark:shadow-none">
           <div className="flex items-center gap-2 border-b border-border px-5 py-3.5">
             <UserRound size={15} className="text-accent" strokeWidth={1.8} />
-            <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
+            <p className="text-sm text-muted">
               Account information
             </p>
           </div>
@@ -84,7 +84,7 @@ export default function Profile() {
 
         <div className="mt-4 flex items-center gap-2 px-1">
           <Activity size={13} className="text-muted" strokeWidth={1.8} />
-          <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-faint">
+          <span className="text-xs text-">
             Account information is synced from your active session
           </span>
         </div>

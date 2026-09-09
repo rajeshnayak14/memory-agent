@@ -42,7 +42,7 @@ const SWATCHES = [
 ];
 
 const inputClass =
-  "w-full rounded-lg border border-border-strong bg-surface px-3 py-2 text-sm text-primary outline-none transition-colors placeholder:text-faint focus:border-focus";
+  "w-full rounded-2xl border border-border-strong bg-surface px-3 py-2 text-sm text-primary outline-none transition-colors placeholder:text-faint focus:border-focus";
 
 export default function CategoryEditor({
   initial = {},
@@ -69,7 +69,7 @@ export default function CategoryEditor({
   };
 
   return (
-    <div className="rounded-xl border border-border bg-surface p-3">
+    <div className="rounded-3xl border border-border bg-surface p-3">
       <input
         type="text"
         value={name}
@@ -87,7 +87,7 @@ export default function CategoryEditor({
               type="button"
               onClick={() => setIcon(key)}
               aria-label={key}
-              className={`flex h-8 w-8 items-center justify-center rounded-lg border transition-colors ${
+              className={`flex h-8 w-8 items-center justify-center rounded-2xl border transition-colors ${
                 icon === key
                   ? "border-accent-border bg-accent-subtle text-accent"
                   : "border-border text-muted hover:bg-surface-hover"

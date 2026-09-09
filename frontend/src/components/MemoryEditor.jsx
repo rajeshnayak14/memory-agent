@@ -30,7 +30,7 @@ export default function MemoryEditor({
   };
 
   return (
-    <div className="rounded-xl border border-border bg-surface p-3">
+    <div className="rounded-3xl border border-border bg-surface p-3">
 
       <textarea
         autoFocus={autoFocus}
@@ -41,7 +41,7 @@ export default function MemoryEditor({
           if (error) setError("");
         }}
         placeholder="What should Mnemos remember?"
-        className="w-full resize-none rounded-lg border border-border-strong bg-surface px-3.5 py-2.5 text-sm leading-6 text-primary outline-none transition-colors placeholder:text-faint focus:border-focus"
+        className="w-full resize-none rounded-2xl border border-border-strong bg-surface px-3.5 py-2.5 text-sm leading-6 text-primary outline-none transition-colors placeholder:text-faint focus:border-focus"
       />
 
       <div className="mt-2 flex items-center justify-between">

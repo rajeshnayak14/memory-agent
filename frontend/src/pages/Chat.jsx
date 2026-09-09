@@ -538,7 +538,7 @@ export default function Chat() {
 
           <div className="flex min-w-0 items-center gap-3">
 
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-accent-border bg-accent-subtle text-accent">
+            <div className="icon-blob flex h-9 w-9 shrink-0 items-center justify-center bg-accent-subtle text-accent">
               <MessageSquare
                 size={17}
                 strokeWidth={1.8}
@@ -546,11 +546,11 @@ export default function Chat() {
             </div>
 
             <div className="min-w-0">
-              <h1 className="truncate text-[15px] font-semibold tracking-tight text-primary">
+              <h1 className="truncate font-heading text-base font-semibold tracking-tight text-primary">
                 Chat
               </h1>
 
-              <p className="hidden font-mono text-[10px] uppercase tracking-[0.12em] text-faint sm:block">
+              <p className="hidden text-xs text-faint sm:block">
                 Ask, log expenses, or check your budget
               </p>
             </div>
@@ -577,7 +577,7 @@ export default function Chat() {
             {loadingHistory ? (
 
               <div className="flex flex-1 items-center justify-center py-20">
-                <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-faint">
+                <p className="text-xs text-faint">
                   Loading conversation...
                 </p>
               </div>
@@ -590,18 +590,18 @@ export default function Chat() {
 
                   <div className="mb-7 text-center">
 
-                    <div className="mx-auto mb-4 flex h-11 w-11 items-center justify-center rounded-xl border border-accent-border bg-accent-subtle text-accent">
+                    <div className="mx-auto mb-4 flex h-11 w-11 items-center justify-center rounded-3xl border border-accent-border bg-accent-subtle text-accent">
                       <MessageSquare
                         size={20}
                         strokeWidth={1.7}
                       />
                     </div>
 
-                    <p className="mb-1 text-[11px] font-medium uppercase tracking-[0.16em] text-muted">
+                    <p className="mb-1 text-sm text-muted">
                       Personal context
                     </p>
 
-                    <h2 className="text-2xl font-semibold tracking-tight text-primary">
+                    <h2 className="font-heading text-2xl font-semibold tracking-tight text-primary">
                       What would you like Mnemos to remember?
                     </h2>
 
@@ -651,7 +651,7 @@ export default function Chat() {
 
           <div className="mx-auto max-w-3xl">
 
-            <div className="rounded-xl border border-border-strong bg-surface p-2 shadow-[0_4px_16px_rgba(32,37,34,0.04)] transition-colors focus-within:border-focus">
+            <div className="rounded-3xl border border-border-strong bg-surface p-2 shadow-soft dark:shadow-none transition-colors focus-within:border-focus">
 
               <div className="flex items-end gap-2">
 
@@ -674,7 +674,7 @@ export default function Chat() {
                       : !input.trim() || loadingHistory
                   }
                   aria-label={sending ? "Stop generating" : "Send message"}
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent text-white transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:bg-border-strong disabled:text-faint"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent text-white transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:bg-border-strong disabled:text-faint"
                 >
                   {sending ? (
                     <Square

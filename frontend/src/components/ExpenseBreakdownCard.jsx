@@ -5,10 +5,10 @@ export default function ExpenseBreakdownCard({ card }) {
   const showCurrency = card.totals.length > 1;
 
   return (
-    <div className="mt-2 overflow-hidden rounded-xl border border-border bg-surface shadow-[0_4px_16px_rgba(32,37,34,0.04)]">
+    <div className="mt-2 overflow-hidden rounded-3xl border border-border bg-surface shadow-soft dark:shadow-none">
       <div className="flex items-center gap-2 border-b border-border bg-surface-subtle px-4 py-2.5">
         <PieChart size={13} strokeWidth={1.8} className="text-accent" />
-        <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted">
+        <span className="text-xs text-muted">
           Spending by category
         </span>
       </div>

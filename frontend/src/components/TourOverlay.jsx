@@ -111,7 +111,7 @@ export default function TourOverlay() {
     <div className="fixed inset-0 z-[200]">
       {rect ? (
         <div
-          className="pointer-events-none fixed rounded-xl border-2 border-accent transition-all duration-200"
+          className="pointer-events-none fixed rounded-3xl border-2 border-accent transition-all duration-200"
           style={{
             top: rect.top - SPOTLIGHT_PADDING,
             left: rect.left - SPOTLIGHT_PADDING,
@@ -129,7 +129,7 @@ export default function TourOverlay() {
 
       <div
         ref={tooltipRef}
-        className="fixed rounded-xl border border-border bg-surface p-4 shadow-[0_18px_50px_rgba(12,14,13,0.35)] transition-all duration-200"
+        className="fixed rounded-3xl border border-border bg-surface p-4 shadow-[0_18px_50px_rgba(12,14,13,0.35)] transition-all duration-200"
         style={{ top, left, width: TOOLTIP_WIDTH }}
       >
         <div className="flex items-start justify-between gap-2">

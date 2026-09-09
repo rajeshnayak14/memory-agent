@@ -124,7 +124,7 @@ export default function Register() {
         <>
           <div className="my-5 flex items-center gap-3">
             <div className="h-px flex-1 bg-border" />
-            <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-faint">or</span>
+            <span className="text-xs text-faint">or</span>
             <div className="h-px flex-1 bg-border" />
           </div>
 

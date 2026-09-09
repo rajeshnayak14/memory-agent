@@ -167,7 +167,7 @@ function RecentItem({
 
 function AccountMenuPanel({ onNavigate, onLogout, onStartTour, showLogout }) {
   return (
-    <div className="absolute bottom-full left-0 z-50 mb-2 w-56 overflow-hidden rounded-xl border border-border bg-surface shadow-[0_18px_50px_rgba(32,37,34,0.12)]">
+    <div className="absolute bottom-full left-0 z-50 mb-2 w-56 overflow-hidden rounded-3xl border border-border bg-surface shadow-[0_18px_50px_rgba(32,37,34,0.12)]">
       <div className="p-1.5">
         <button
           type="button"
@@ -332,7 +332,7 @@ function SearchPanel({
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-primary/20 px-4 pt-20">
-      <div className="w-full max-w-xl overflow-hidden rounded-xl border border-border bg-surface shadow-[0_18px_50px_rgba(32,37,34,0.12)]">
+      <div className="w-full max-w-xl overflow-hidden rounded-3xl border border-border bg-surface shadow-[0_18px_50px_rgba(32,37,34,0.12)]">
         <div className="flex items-center gap-3 border-b border-border px-4 py-3">
           <Search
             size={18}
@@ -405,7 +405,7 @@ function RecentsPanel({
         onClick={onClose}
       />
 
-      <div className="absolute left-16 top-20 w-80 rounded-xl border border-border bg-surface p-3 shadow-[0_18px_50px_rgba(32,37,34,0.12)]">
+      <div className="absolute left-16 top-20 w-80 rounded-3xl border border-border bg-surface p-3 shadow-[0_18px_50px_rgba(32,37,34,0.12)]">
         <div className="mb-2 flex items-center justify-between px-2">
           <div>
             <p className="text-sm font-semibold text-primary">
@@ -690,7 +690,7 @@ export default function AppLayout() {
         {!collapsed && (
           <div className="mt-6 max-h-[32vh] min-h-0 overflow-y-auto px-2 lg:max-h-none lg:flex-1">
             <div className="mb-2 flex items-center justify-between px-3">
-              <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-faint">
+              <p className="text-xs text-faint">
                 Recent chats
               </p>
 

@@ -49,7 +49,7 @@ export default function VerifyEmailStep({ verificationToken, onVerified }) {
 
   return (
     <>
-      <h1 className="flex items-center gap-2.5 text-xl font-semibold tracking-tight text-primary">
+      <h1 className="flex items-center gap-2.5 font-heading text-2xl font-semibold tracking-tight text-primary">
         <MailCheck size={19} strokeWidth={1.8} />
         Verify your email
       </h1>
@@ -75,14 +75,14 @@ export default function VerifyEmailStep({ verificationToken, onVerified }) {
         {error && (
           <p
             role="alert"
-            className="rounded-lg border border-danger-border bg-danger-subtle px-3 py-2 text-sm text-danger"
+            className="rounded-2xl border border-danger-border bg-danger-subtle px-3 py-2 text-sm text-danger"
           >
             {error}
           </p>
         )}
 
         {resendMessage && (
-          <p className="rounded-lg border border-accent-border bg-accent-subtle px-3 py-2 text-sm text-accent">
+          <p className="rounded-2xl border border-accent-border bg-accent-subtle px-3 py-2 text-sm text-accent">
             {resendMessage}
           </p>
         )}

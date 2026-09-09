@@ -88,7 +88,7 @@ export default function Login() {
 
   return (
     <AuthLayout>
-      <h1 className="text-xl font-semibold tracking-tight text-primary">
+      <h1 className="font-heading text-2xl font-semibold tracking-tight text-primary">
         Sign in
       </h1>
 
@@ -97,7 +97,7 @@ export default function Login() {
       </p>
 
       {location.state?.registered && (
-        <p className="mt-5 rounded-lg border border-accent-border bg-accent-subtle px-3 py-2 text-sm text-accent">
+        <p className="mt-5 rounded-2xl border border-accent-border bg-accent-subtle px-3 py-2 text-sm text-accent">
           Account created. Sign in to continue.
         </p>
       )}
@@ -137,7 +137,7 @@ export default function Login() {
         {error && (
           <p
             role="alert"
-            className="rounded-lg border border-danger-border bg-danger-subtle px-3 py-2 text-sm text-danger"
+            className="rounded-2xl border border-danger-border bg-danger-subtle px-3 py-2 text-sm text-danger"
           >
             {error}
           </p>
@@ -158,7 +158,7 @@ export default function Login() {
         <>
           <div className="my-5 flex items-center gap-3">
             <div className="h-px flex-1 bg-border" />
-            <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-faint">or</span>
+            <span className="text-xs text-faint">or</span>
             <div className="h-px flex-1 bg-border" />
           </div>
 
@@ -169,7 +169,7 @@ export default function Login() {
         </>
       )}
 
-      <div className="mt-5 flex items-center gap-2 rounded-lg border border-border bg-surface-subtle px-3 py-2.5">
+      <div className="mt-5 flex items-center gap-2 rounded-2xl border border-border bg-surface-subtle px-3 py-2.5">
         <ShieldCheck
           size={14}
           className="shrink-0 text-accent"

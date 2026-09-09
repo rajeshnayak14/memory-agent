@@ -15,10 +15,10 @@ export default function DailyBreakdownCard({ card }) {
   const showCurrency = card.totals.length > 1;
 
   return (
-    <div className="mt-2 overflow-hidden rounded-xl border border-border bg-surface shadow-[0_4px_16px_rgba(32,37,34,0.04)]">
+    <div className="mt-2 overflow-hidden rounded-3xl border border-border bg-surface shadow-soft dark:shadow-none">
       <div className="flex items-center gap-2 border-b border-border bg-surface-subtle px-4 py-2.5">
         <CalendarDays size={13} strokeWidth={1.8} className="text-accent" />
-        <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted">
+        <span className="text-xs text-muted">
           Spending by day
         </span>
       </div>
@@ -26,7 +26,7 @@ export default function DailyBreakdownCard({ card }) {
       <div className="max-h-80 divide-y divide-border overflow-y-auto px-4">
         {card.days.map((day) => (
           <div key={day.date} className="py-2.5">
-            <p className="mb-1 font-mono text-[10px] uppercase tracking-[0.08em] text-faint">
+            <p className="mb-1 text-xs text-">
               {formatDayHeading(day.date)}
             </p>
 

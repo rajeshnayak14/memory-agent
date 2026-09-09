@@ -28,10 +28,10 @@ export default function GoalCard({
   };
 
   return (
-    <div className="rounded-xl border border-border bg-surface p-4 shadow-[0_4px_16px_rgba(32,37,34,0.03)] dark:shadow-none">
+    <div className="rounded-3xl border border-border bg-surface p-4 shadow-soft dark:shadow-none">
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-start gap-2.5">
-          <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent-subtle text-accent">
+          <div className="icon-blob mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center bg-accent-subtle text-accent">
             <PiggyBank size={15} strokeWidth={1.8} />
           </div>
           <div>
@@ -49,7 +49,7 @@ export default function GoalCard({
           onClick={() => onDelete(goal)}
           disabled={deleting}
           aria-label="Delete goal"
-          className="shrink-0 rounded-lg p-1.5 text-faint transition-colors hover:bg-danger-subtle hover:text-danger disabled:opacity-50"
+          className="shrink-0 rounded-2xl p-1.5 text-faint transition-colors hover:bg-danger-subtle hover:text-danger disabled:opacity-50"
         >
           <Trash2 size={14} strokeWidth={1.9} />
         </button>
@@ -76,7 +76,7 @@ export default function GoalCard({
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="Amount"
-            className="w-full rounded-lg border border-border-strong bg-surface px-3 py-1.5 text-sm text-primary outline-none focus:border-focus"
+            className="w-full rounded-2xl border border-border-strong bg-surface px-3 py-1.5 text-sm text-primary outline-none focus:border-focus"
           />
           <Button variant="ghost" size="sm" onClick={() => setAddingFunds(false)}>
             Cancel

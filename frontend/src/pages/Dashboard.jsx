@@ -425,7 +425,7 @@ export default function Dashboard() {
                 Thread
               </p>
 
-              <p className="mt-1 truncate rounded-xl bg-surface-subtle px-3 py-2 font-mono text-xs text-secondary">
+              <p className="mt-1 truncate rounded-3xl bg-surface-subtle px-3 py-2 font-mono text-xs text-secondary">
                 {threadId}
               </p>
 

@@ -40,7 +40,7 @@ export default function MemoryRow({
           {memory.content}
         </p>
 
-        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 font-mono text-[10px] uppercase tracking-[0.05em] text-faint">
+        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-">
           <span>
             created {formatDate(memory.created_at)}
           </span>
@@ -59,7 +59,7 @@ export default function MemoryRow({
           type="button"
           onClick={() => setEditing(true)}
           aria-label="Edit memory"
-          className="rounded-lg p-2 text-faint transition-colors hover:bg-accent-subtle hover:text-accent"
+          className="rounded-full p-2 text-faint transition-colors hover:bg-accent-subtle hover:text-accent"
         >
           <Pencil
             size={15}
@@ -71,7 +71,7 @@ export default function MemoryRow({
           type="button"
           onClick={() => onDelete(memory)}
           aria-label="Delete memory"
-          className="rounded-lg p-2 text-faint transition-colors hover:bg-danger-subtle hover:text-danger"
+          className="rounded-full p-2 text-faint transition-colors hover:bg-danger-subtle hover:text-danger"
         >
           <Trash2
             size={15}

@@ -21,10 +21,10 @@ export default function BudgetCard({ budget, onDelete, deleting }) {
         : "bg-success";
 
   return (
-    <div className="rounded-xl border border-border bg-surface p-4 shadow-[0_4px_16px_rgba(32,37,34,0.03)]">
+    <div className="rounded-3xl border border-border bg-surface p-5 shadow-soft dark:shadow-none">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="font-mono text-lg font-semibold text-primary">
+          <p className="font-heading text-xl font-bold text-primary">
             {formatMoney(budget.amount, budget.currency)}
           </p>
           <p className="truncate text-xs text-faint">
@@ -37,13 +37,13 @@ export default function BudgetCard({ budget, onDelete, deleting }) {
           onClick={() => onDelete(budget)}
           disabled={deleting}
           aria-label="Delete budget"
-          className="shrink-0 rounded-lg p-1.5 text-faint transition-colors hover:bg-danger-subtle hover:text-danger disabled:opacity-50"
+          className="shrink-0 rounded-full p-1.5 text-faint transition-colors hover:bg-danger-subtle hover:text-danger disabled:opacity-50"
         >
           <Trash2 size={14} strokeWidth={1.9} />
         </button>
       </div>
 
-      <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-border">
+      <div className="mt-4 h-2.5 w-full overflow-hidden rounded-full bg-surface-subtle">
         <div
           className={`h-full rounded-full transition-[width] ${barColor}`}
           style={{ width: `${pct}%` }}

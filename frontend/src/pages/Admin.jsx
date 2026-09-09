@@ -37,8 +37,8 @@ import ConfirmDialog from "../components/ConfirmDialog";
 
 function StatCard({ icon: Icon, label, value }) {
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-border bg-surface p-4">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-accent-border bg-accent-subtle text-accent">
+    <div className="flex items-center gap-3 rounded-3xl border border-border bg-surface p-4">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl border border-accent-border bg-accent-subtle text-accent">
         <Icon size={16} strokeWidth={1.9} />
       </div>
 
@@ -106,11 +106,11 @@ function CreateUserForm({ onCancel, onCreated, notify }) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="mt-6 rounded-xl border border-border bg-surface p-4 shadow-[0_4px_16px_rgba(32,37,34,0.04)]"
+      className="mt-6 rounded-3xl border border-border bg-surface p-4 shadow-soft dark:shadow-none"
     >
       <div className="mb-3 flex items-center gap-2 px-1">
         <UserPlus size={14} className="text-accent" strokeWidth={1.8} />
-        <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
+        <p className="text-sm text-muted">
           New user
         </p>
       </div>
@@ -201,7 +201,7 @@ function UserDetailPanel({ userId, onClose, notify }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-primary/20 px-4 pt-16">
-      <div className="w-full max-w-lg overflow-hidden rounded-xl border border-border bg-surface shadow-[0_18px_50px_rgba(32,37,34,0.12)]">
+      <div className="w-full max-w-lg overflow-hidden rounded-3xl border border-border bg-surface shadow-[0_18px_50px_rgba(32,37,34,0.12)]">
         <div className="flex items-center justify-between border-b border-border px-5 py-3.5">
           <p className="text-sm font-semibold text-primary">User details</p>
           <button
@@ -252,31 +252,31 @@ function UserDetailPanel({ userId, onClose, notify }) {
               </div>
 
               <div className="grid grid-cols-3 gap-3 text-sm">
-                <div className="rounded-lg border border-border bg-surface-subtle p-3 text-center">
+                <div className="rounded-2xl border border-border bg-surface-subtle p-3 text-center">
                   <p className="text-lg font-semibold text-primary">
                     {detail.expense_count}
                   </p>
                   <p className="text-xs text-faint">Expenses</p>
                 </div>
-                <div className="rounded-lg border border-border bg-surface-subtle p-3 text-center">
+                <div className="rounded-2xl border border-border bg-surface-subtle p-3 text-center">
                   <p className="text-lg font-semibold text-primary">
                     {detail.budget_count}
                   </p>
                   <p className="text-xs text-faint">Budgets</p>
                 </div>
-                <div className="rounded-lg border border-border bg-surface-subtle p-3 text-center">
+                <div className="rounded-2xl border border-border bg-surface-subtle p-3 text-center">
                   <p className="text-lg font-semibold text-primary">
                     {detail.goal_count}
                   </p>
                   <p className="text-xs text-faint">Goals</p>
                 </div>
-                <div className="rounded-lg border border-border bg-surface-subtle p-3 text-center">
+                <div className="rounded-2xl border border-border bg-surface-subtle p-3 text-center">
                   <p className="text-lg font-semibold text-primary">
                     {detail.category_count}
                   </p>
                   <p className="text-xs text-faint">Categories</p>
                 </div>
-                <div className="rounded-lg border border-border bg-surface-subtle p-3 text-center">
+                <div className="rounded-2xl border border-border bg-surface-subtle p-3 text-center">
                   <p className="text-lg font-semibold text-primary">
                     {detail.conversation_count}
                   </p>
@@ -442,15 +442,15 @@ export default function Admin() {
       <div className="mx-auto max-w-5xl">
         <header className="flex flex-wrap items-start justify-between gap-5">
           <div className="flex items-start gap-3.5">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-accent-border bg-accent-subtle text-accent">
+            <div className="icon-blob flex h-10 w-10 shrink-0 items-center justify-center bg-accent-subtle text-accent">
               <ShieldCheck size={19} strokeWidth={1.8} />
             </div>
 
             <div>
-              <p className="mb-0.5 font-mono text-[10px] uppercase tracking-[0.15em] text-muted">
+              <p className="mb-0.5 text-sm text-muted">
                 Administration
               </p>
-              <h1 className="text-xl font-semibold tracking-tight text-primary">
+              <h1 className="font-heading text-2xl font-semibold tracking-tight text-primary">
                 Admin panel
               </h1>
               <p className="mt-1 text-sm text-muted">
@@ -508,7 +508,7 @@ export default function Admin() {
           onSubmit={handleSearchSubmit}
           className="mt-7 flex items-center gap-3"
         >
-          <div className="flex flex-1 items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2">
+          <div className="flex flex-1 items-center gap-2 rounded-2xl border border-border bg-surface px-3 py-2">
             <Search size={15} className="text-faint" />
             <input
               value={searchInput}
@@ -537,7 +537,7 @@ export default function Admin() {
 
         <div className="mt-5">
           {loading ? (
-            <div className="flex justify-center rounded-xl border border-border bg-surface py-16">
+            <div className="flex justify-center rounded-3xl border border-border bg-surface py-16">
               <Spinner size={20} />
             </div>
           ) : loadError ? (
@@ -558,7 +558,7 @@ export default function Admin() {
           ) : rows.length === 0 ? (
             <EmptyState icon={Users} title="No users found" />
           ) : (
-            <div className="overflow-x-auto rounded-xl border border-border bg-surface shadow-[0_4px_16px_rgba(32,37,34,0.03)]">
+            <div className="overflow-x-auto rounded-3xl border border-border bg-surface shadow-soft dark:shadow-none">
               <table className="w-full min-w-[640px] text-left text-sm">
                 <thead>
                   <tr className="border-b border-border text-xs uppercase tracking-wide text-faint">

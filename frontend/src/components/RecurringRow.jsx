@@ -17,7 +17,7 @@ export default function RecurringRow({
     <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3 last:border-b-0">
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2">
-          <p className="font-mono text-sm font-semibold text-primary">
+          <p className="font-heading text-sm font-bold text-primary">
             {formatMoney(amount, currency)}
           </p>
 
@@ -42,7 +42,7 @@ export default function RecurringRow({
           disabled={busy}
           aria-label={active ? "Pause" : "Resume"}
           title={active ? "Pause" : "Resume"}
-          className="rounded-lg p-2 text-faint transition-colors hover:bg-accent-subtle hover:text-accent disabled:opacity-50"
+          className="rounded-full p-2 text-faint transition-colors hover:bg-accent-subtle hover:text-accent disabled:opacity-50"
         >
           {active ? (
             <Pause size={15} strokeWidth={1.9} />
@@ -56,7 +56,7 @@ export default function RecurringRow({
           onClick={onDelete}
           disabled={busy}
           aria-label="Delete recurring rule"
-          className="rounded-lg p-2 text-faint transition-colors hover:bg-danger-subtle hover:text-danger disabled:opacity-50"
+          className="rounded-full p-2 text-faint transition-colors hover:bg-danger-subtle hover:text-danger disabled:opacity-50"
         >
           <Trash2 size={15} strokeWidth={1.9} />
         </button>

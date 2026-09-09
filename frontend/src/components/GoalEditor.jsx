@@ -3,7 +3,7 @@ import Button from "./Button";
 import { CURRENCY_CODES } from "../utils/currency";
 
 const inputClass =
-  "w-full rounded-lg border border-border-strong bg-surface px-3 py-2 text-sm text-primary outline-none transition-colors placeholder:text-faint focus:border-focus";
+  "w-full rounded-2xl border border-border-strong bg-surface px-3 py-2 text-sm text-primary outline-none transition-colors placeholder:text-faint focus:border-focus";
 
 export default function GoalEditor({
   defaultCurrency = "INR",
@@ -41,7 +41,7 @@ export default function GoalEditor({
   };
 
   return (
-    <div className="rounded-xl border border-border bg-surface p-3">
+    <div className="rounded-3xl border border-border bg-surface p-3">
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         <input
           type="text"

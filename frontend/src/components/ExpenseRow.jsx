@@ -36,7 +36,7 @@ export default function ExpenseRow({
 
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-baseline gap-2">
-          <p className="font-mono text-sm font-semibold text-primary">
+          <p className="font-heading text-base font-bold text-primary">
             {formatMoney(expense.amount, expense.currency)}
           </p>
           <p className="text-sm text-secondary">{expense.category}</p>
@@ -46,7 +46,7 @@ export default function ExpenseRow({
           {expense.description}
         </p>
 
-        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 font-mono text-[10px] uppercase tracking-[0.05em] text-faint">
+        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-faint">
           <span>{formatDate(expense.expense_date)}</span>
         </div>
       </div>
@@ -56,7 +56,7 @@ export default function ExpenseRow({
           type="button"
           onClick={() => setEditing(true)}
           aria-label="Edit expense"
-          className="rounded-lg p-2 text-faint transition-colors hover:bg-accent-subtle hover:text-accent"
+          className="rounded-full p-2 text-faint transition-colors hover:bg-accent-subtle hover:text-accent"
         >
           <Pencil size={15} strokeWidth={1.9} />
         </button>
@@ -65,7 +65,7 @@ export default function ExpenseRow({
           type="button"
           onClick={() => onDelete(expense)}
           aria-label="Delete expense"
-          className="rounded-lg p-2 text-faint transition-colors hover:bg-danger-subtle hover:text-danger"
+          className="rounded-full p-2 text-faint transition-colors hover:bg-danger-subtle hover:text-danger"
         >
           <Trash2 size={15} strokeWidth={1.9} />
         </button>

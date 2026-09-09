@@ -57,10 +57,10 @@ export default function Settings() {
     <div className="min-h-screen bg-page px-6 py-8 sm:px-10 sm:py-10">
       <div className="mx-auto max-w-2xl">
         <header>
-          <p className="mb-1 font-mono text-[10px] uppercase tracking-[0.15em] text-muted">
+          <p className="mb-1 text-sm text-muted">
             Preferences
           </p>
-          <h1 className="flex items-center gap-2.5 text-xl font-semibold tracking-tight text-primary">
+          <h1 className="flex items-center gap-2.5 font-heading text-2xl font-semibold tracking-tight text-primary">
             <SettingsIcon size={19} strokeWidth={1.8} />
             Settings
           </h1>
@@ -69,10 +69,10 @@ export default function Settings() {
           </p>
         </header>
 
-        <section className="mt-7 overflow-hidden rounded-xl border border-border bg-surface shadow-[0_4px_16px_rgba(32,37,34,0.03)]">
+        <section className="mt-7 overflow-hidden rounded-3xl border border-border bg-surface shadow-soft dark:shadow-none">
           <div className="flex items-center gap-2 border-b border-border px-5 py-3.5">
             <Wallet size={15} className="text-accent" strokeWidth={1.8} />
-            <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
+            <p className="text-sm text-muted">
               Currency
             </p>
           </div>
@@ -89,7 +89,7 @@ export default function Settings() {
               <select
                 value={currency}
                 onChange={(e) => setCurrency(e.target.value)}
-                className="rounded-lg border border-border-strong bg-surface px-2.5 py-1.5 text-sm text-primary outline-none transition-colors focus:border-focus"
+                className="rounded-2xl border border-border-strong bg-surface px-2.5 py-1.5 text-sm text-primary outline-none transition-colors focus:border-focus"
               >
                 {CURRENCY_CODES.map((code) => (
                   <option key={code} value={code}>
@@ -112,10 +112,10 @@ export default function Settings() {
           </div>
         </section>
 
-        <section className="mt-6 overflow-hidden rounded-xl border border-border bg-surface shadow-[0_4px_16px_rgba(32,37,34,0.03)]">
+        <section className="mt-6 overflow-hidden rounded-3xl border border-border bg-surface shadow-soft dark:shadow-none">
           <div className="flex items-center gap-2 border-b border-border px-5 py-3.5">
             <Palette size={15} className="text-accent" strokeWidth={1.8} />
-            <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
+            <p className="text-sm text-muted">
               Appearance
             </p>
           </div>
@@ -128,7 +128,7 @@ export default function Settings() {
               </p>
             </div>
 
-            <div className="flex shrink-0 gap-1 rounded-lg border border-border-strong bg-surface-subtle p-1">
+            <div className="flex shrink-0 gap-1 rounded-2xl border border-border-strong bg-surface-subtle p-1">
               <button
                 type="button"
                 onClick={() => setTheme("light")}
@@ -158,10 +158,10 @@ export default function Settings() {
           </div>
         </section>
 
-        <section className="mt-6 overflow-hidden rounded-xl border border-border bg-surface shadow-[0_4px_16px_rgba(32,37,34,0.03)]">
+        <section className="mt-6 overflow-hidden rounded-3xl border border-border bg-surface shadow-soft dark:shadow-none">
           <div className="flex items-center gap-2 border-b border-border px-5 py-3.5">
             <ShieldCheck size={15} className="text-accent" strokeWidth={1.8} />
-            <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
+            <p className="text-sm text-muted">
               Account security
             </p>
           </div>

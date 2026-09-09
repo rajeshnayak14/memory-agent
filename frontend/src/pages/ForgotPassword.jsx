@@ -33,7 +33,7 @@ function RequestCodeStep({ onSent }) {
 
   return (
     <>
-      <h1 className="text-xl font-semibold tracking-tight text-primary">
+      <h1 className="font-heading text-2xl font-semibold tracking-tight text-primary">
         Forgot password
       </h1>
 
@@ -56,7 +56,7 @@ function RequestCodeStep({ onSent }) {
         {error && (
           <p
             role="alert"
-            className="rounded-lg border border-danger-border bg-danger-subtle px-3 py-2 text-sm text-danger"
+            className="rounded-2xl border border-danger-border bg-danger-subtle px-3 py-2 text-sm text-danger"
           >
             {error}
           </p>
@@ -128,7 +128,7 @@ function ResetPasswordStep({ email }) {
 
   return (
     <>
-      <h1 className="flex items-center gap-2.5 text-xl font-semibold tracking-tight text-primary">
+      <h1 className="flex items-center gap-2.5 font-heading text-2xl font-semibold tracking-tight text-primary">
         <KeyRound size={19} strokeWidth={1.8} />
         Reset your password
       </h1>
@@ -165,7 +165,7 @@ function ResetPasswordStep({ email }) {
         {error && (
           <p
             role="alert"
-            className="rounded-lg border border-danger-border bg-danger-subtle px-3 py-2 text-sm text-danger"
+            className="rounded-2xl border border-danger-border bg-danger-subtle px-3 py-2 text-sm text-danger"
           >
             {error}
           </p>

@@ -5,10 +5,10 @@ export default function EmptyState({
   action,
 }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-border-strong bg-surface-subtle px-6 py-14 text-center">
+    <div className="flex flex-col items-center justify-center gap-4 rounded-3xl border border-dashed border-border-strong bg-surface-subtle px-6 py-14 text-center">
 
       {Icon && (
-        <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-accent-border bg-accent-subtle text-accent">
+        <div className="flex h-11 w-11 items-center justify-center rounded-3xl border border-accent-border bg-accent-subtle text-accent">
           <Icon size={19} strokeWidth={1.75} />
         </div>
       )}

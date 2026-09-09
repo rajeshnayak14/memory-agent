@@ -111,14 +111,14 @@ export default function Categories() {
       <div className="mx-auto max-w-3xl">
         <header className="flex flex-wrap items-start justify-between gap-5">
           <div className="flex items-start gap-3.5">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-accent-border bg-accent-subtle text-accent">
+            <div className="icon-blob flex h-10 w-10 shrink-0 items-center justify-center bg-accent-subtle text-accent">
               <Tag size={19} strokeWidth={1.8} />
             </div>
             <div>
-              <p className="mb-0.5 font-mono text-[10px] uppercase tracking-[0.15em] text-muted">
+              <p className="mb-0.5 text-sm text-muted">
                 Reference list
               </p>
-              <h1 className="text-xl font-semibold tracking-tight text-primary">
+              <h1 className="font-heading text-2xl font-semibold tracking-tight text-primary">
                 Categories
               </h1>
               <p className="mt-1 text-sm text-muted">
@@ -150,7 +150,7 @@ export default function Categories() {
 
         <div className="mt-7">
           {loading ? (
-            <div className="flex justify-center rounded-xl border border-border bg-surface py-16">
+            <div className="flex justify-center rounded-3xl border border-border bg-surface py-16">
               <Spinner size={20} />
             </div>
           ) : loadError ? (
@@ -166,7 +166,7 @@ export default function Categories() {
               description="Define a few to keep your expense categories consistent — this doesn't change how the assistant categorizes anything you tell it in chat."
             />
           ) : (
-            <div className="overflow-hidden rounded-xl border border-border bg-surface shadow-[0_4px_16px_rgba(32,37,34,0.03)]">
+            <div className="overflow-hidden rounded-3xl border border-border bg-surface shadow-soft dark:shadow-none">
               {categories.map((category) => (
                 <CategoryRow
                   key={category.id}

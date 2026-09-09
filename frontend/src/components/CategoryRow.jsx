@@ -33,7 +33,7 @@ export default function CategoryRow({
   return (
     <div className="group flex items-center gap-3 border-b border-border bg-surface px-4 py-3.5 transition-colors last:border-b-0 hover:bg-surface-hover">
       <div
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
+        className="icon-blob flex h-9 w-9 shrink-0 items-center justify-center"
         style={{ backgroundColor: `${category.color}22`, color: category.color }}
       >
         <Icon size={16} strokeWidth={1.8} />
@@ -56,7 +56,7 @@ export default function CategoryRow({
           type="button"
           onClick={() => setEditing(true)}
           aria-label="Edit category"
-          className="rounded-lg p-2 text-faint transition-colors hover:bg-accent-subtle hover:text-accent"
+          className="rounded-2xl p-2 text-faint transition-colors hover:bg-accent-subtle hover:text-accent"
         >
           <Pencil size={15} strokeWidth={1.9} />
         </button>
@@ -65,7 +65,7 @@ export default function CategoryRow({
           type="button"
           onClick={() => onDelete(category)}
           aria-label="Delete category"
-          className="rounded-lg p-2 text-faint transition-colors hover:bg-danger-subtle hover:text-danger"
+          className="rounded-2xl p-2 text-faint transition-colors hover:bg-danger-subtle hover:text-danger"
         >
           <Trash2 size={15} strokeWidth={1.9} />
         </button>

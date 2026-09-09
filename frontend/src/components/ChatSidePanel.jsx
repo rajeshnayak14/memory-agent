@@ -81,8 +81,8 @@ export default function ChatSidePanel({ threadId }) {
     return (
       <aside className="hidden w-[300px] shrink-0 border-l border-border bg-surface p-4 lg:block">
         <div className="animate-pulse space-y-4">
-          <div className="h-40 rounded-xl bg-surface-hover" />
-          <div className="h-32 rounded-xl bg-surface-hover" />
+          <div className="h-40 rounded-3xl bg-surface-hover" />
+          <div className="h-32 rounded-3xl bg-surface-hover" />
         </div>
       </aside>
     );
@@ -92,10 +92,10 @@ export default function ChatSidePanel({ threadId }) {
     <aside className="hidden w-[300px] shrink-0 overflow-y-auto border-l border-border bg-surface p-4 lg:block">
       <div className="flex flex-col gap-4">
         {budget && (
-          <section className="rounded-xl border border-border bg-page p-4">
+          <section className="rounded-3xl border border-border bg-page p-4">
             <div className="mb-3 flex items-center gap-2">
               <Calendar size={13} className="text-accent" strokeWidth={1.8} />
-              <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted">
+              <span className="text-xs text-muted">
                 Budget summary
               </span>
             </div>
@@ -103,11 +103,11 @@ export default function ChatSidePanel({ threadId }) {
           </section>
         )}
 
-        <section className="rounded-xl border border-border bg-page p-4">
+        <section className="rounded-3xl border border-border bg-page p-4">
           <div className="mb-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Receipt size={13} className="text-accent" strokeWidth={1.8} />
-              <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted">
+              <span className="text-xs text-muted">
                 Recent expenses
               </span>
             </div>
@@ -141,11 +141,11 @@ export default function ChatSidePanel({ threadId }) {
         </section>
 
         {topCategories.length > 0 && (
-          <section className="rounded-xl border border-border bg-page p-4">
+          <section className="rounded-3xl border border-border bg-page p-4">
             <div className="mb-3 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <BarChart3 size={13} className="text-accent" strokeWidth={1.8} />
-                <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted">
+                <span className="text-xs text-muted">
                   Top categories
                 </span>
               </div>
