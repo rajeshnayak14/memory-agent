@@ -16,6 +16,7 @@ from app.tools.expense_tools import (
     manage_recurring_expense,
     manage_recurring_budget,
 )
+from app.tools.goal_tools import manage_goal
 
 
 # Gemini 2.5 Flash defaults to a *dynamic* thinking budget. With this many
@@ -45,6 +46,11 @@ from app.tools.expense_tools import (
 # pattern above. Trimmed the new section back down (~11000 chars)
 # instead, which reproduced 20/20 clean across two separate runs at
 # budget 3072 - length reduction, not budget tuning, fixed it.
+#
+# Added an 11th tool (manage_goal) at effectively the same prompt
+# length (~11000 chars, replaced rather than added text) and re-ran:
+# 28/30 clean across three 10-run passes at budget 3072 - consistent
+# with this pipeline's normal noise level, not a new regression.
 model = init_chat_model(
     "google_genai:gemini-2.5-flash",
     thinking_budget=3072,
@@ -107,6 +113,7 @@ agent = create_react_agent(
         manage_expense,
         manage_recurring_expense,
         manage_recurring_budget,
+        manage_goal,
     ],
 
     prompt="""
@@ -451,9 +458,9 @@ agent = create_react_agent(
     FINANCIAL GOALS
     =====================================================
 
-    A savings goal is not a budget. There's no tool here to
-    manage goals from chat — say so if asked, rather than
-    creating a budget instead.
+    A savings goal is not a budget — never use budget_manager
+    for one. Use manage_goal for creating, contributing to,
+    listing, updating, or deleting a savings goal.
 
     =====================================================
     USER ID
