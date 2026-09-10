@@ -47,6 +47,7 @@ from app.schemas.auth_schemas import (
     ResetPasswordRequest,
 )
 from app.services.otp import OtpCooldownError, create_and_send_otp, verify_otp_code
+from app.services.audit import record_audit
 from app.validators import validate_password_strength
 
 
@@ -154,6 +155,9 @@ def register(
         "User registered successfully, verification sent: user_id=%s",
         user.id,
     )
+    record_audit(
+        db, "user.registered", actor_id=user.id, actor_username=user.username
+    )
 
     return {
         "message": "Account created. Check your email for a verification code.",
@@ -193,6 +197,9 @@ def verify_email(
     refresh_token = create_refresh_token(user_id)
 
     logger.info("Email verified, user logged in: user_id=%s", user_id)
+    record_audit(
+        db, "user.email_verified", actor_id=user.id, actor_username=user.username
+    )
 
     return {
         "access_token": access_token,
@@ -286,6 +293,9 @@ def reset_password(
     refresh_token = create_refresh_token(str(user.id))
 
     logger.info("Password reset successful: user_id=%s", user.id)
+    record_audit(
+        db, "user.password_reset", actor_id=user.id, actor_username=user.username
+    )
 
     return {
         "access_token": access_token,
@@ -317,6 +327,9 @@ def login(
             "Login failed: invalid credentials for username=%s",
             form_data.username,
         )
+        record_audit(
+            db, "user.login_failed", actor_username=form_data.username
+        )
         raise AuthenticationError(
             "Invalid username or password"
         )
@@ -330,6 +343,12 @@ def login(
         logger.warning(
             "Login failed: invalid credentials for username=%s",
             form_data.username,
+        )
+        record_audit(
+            db,
+            "user.login_failed",
+            actor_id=user.id,
+            actor_username=user.username,
         )
         raise AuthenticationError(
             "Invalid username or password"
@@ -360,6 +379,12 @@ def login(
             "Login blocked pending email verification: user_id=%s",
             user.id,
         )
+        record_audit(
+            db,
+            "user.login_blocked_unverified",
+            actor_id=user.id,
+            actor_username=user.username,
+        )
 
         return {
             "verification_required": True,
@@ -372,6 +397,9 @@ def login(
     logger.info(
         "User login successful: user_id=%s",
         user.id,
+    )
+    record_audit(
+        db, "user.login", actor_id=user.id, actor_username=user.username
     )
 
     return {
@@ -442,6 +470,9 @@ def google_signin(
     refresh_token = create_refresh_token(str(user.id))
 
     logger.info("Google sign-in successful: user_id=%s", user.id)
+    record_audit(
+        db, "user.google_signin", actor_id=user.id, actor_username=user.username
+    )
 
     return {
         "access_token": access_token,
@@ -528,6 +559,7 @@ def logout(
         "User logout successful: user_id=%s",
         user_id,
     )
+    record_audit(db, "user.logout", actor_id=int(user_id))
 
     return {
         "message": "Logged out successfully",

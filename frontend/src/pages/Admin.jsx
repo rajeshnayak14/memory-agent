@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   ShieldCheck,
   Users,
@@ -13,6 +14,7 @@ import {
   Wallet,
   Target,
   UserPlus,
+  History,
 } from "lucide-react";
 
 import {
@@ -315,6 +317,7 @@ function UserDetailPanel({ userId, onClose, notify }) {
 }
 
 export default function Admin() {
+  const navigate = useNavigate();
   const { user: currentUser } = useAuth();
   const { notify } = useToast();
 
@@ -459,14 +462,25 @@ export default function Admin() {
             </div>
           </div>
 
-          <Button
-            variant="accent"
-            size="sm"
-            icon={UserPlus}
-            onClick={() => setCreating((v) => !v)}
-          >
-            Add user
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              icon={History}
+              onClick={() => navigate("/admin/audit-log")}
+            >
+              Audit log
+            </Button>
+
+            <Button
+              variant="accent"
+              size="sm"
+              icon={UserPlus}
+              onClick={() => setCreating((v) => !v)}
+            >
+              Add user
+            </Button>
+          </div>
         </header>
 
         {creating && (

@@ -64,3 +64,16 @@ class AdminStatsResponse(BaseModel):
     total_expenses: int
     total_budgets: int
     total_goals: int
+
+
+class AuditLogItem(BaseModel):
+    id: int
+    actor_username: str | None
+    action: str
+    target_username: str | None
+    detail: str | None
+    created_at: datetime
+
+
+class AuditLogListResponse(BaseModel):
+    logs: list[AuditLogItem]

@@ -31,3 +31,9 @@ export function deleteAdminUser(userId) {
     .delete(`/admin/users/${encodeURIComponent(userId)}`)
     .then((res) => res.data);
 }
+
+export function listAuditLogs(query) {
+  return apiClient
+    .get("/admin/audit-logs", { params: query ? { q: query } : undefined })
+    .then((res) => res.data.logs);
+}

@@ -545,3 +545,54 @@ class EmailOtp(Base):
         nullable=False,
         index=True,
     )
+
+
+class AuditLog(Base):
+    __tablename__ = "audit_logs"
+
+    id: Mapped[int] = mapped_column(
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    # Denormalized alongside the FK so an entry stays meaningful even
+    # after the actor/target account is deleted (the FK just goes null).
+    actor_user_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+
+    actor_username: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+
+    action: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+        index=True,
+    )
+
+    target_user_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+
+    target_username: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+
+    detail: Mapped[str | None] = mapped_column(
+        String(500),
+        nullable=True,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+        index=True,
+    )

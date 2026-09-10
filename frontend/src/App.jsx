@@ -14,6 +14,7 @@ import Memories from "./pages/Memories";
 import Settings from "./pages/Settings";
 import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
+import AuditLog from "./pages/AuditLog";
 
 export default function App() {
   return (
@@ -36,6 +37,7 @@ export default function App() {
           <Route path="/settings" element={<Settings />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/admin/audit-log" element={<AuditLog />} />
         </Route>
       </Route>
 

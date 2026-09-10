@@ -8,20 +8,26 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.dependencies import get_current_admin
 from app.exceptions import DatabaseError, ResourceNotFoundError
-from app.model import Budget, Category, Conversation, Expense, Goal, User
+from app.model import AuditLog, Budget, Category, Conversation, Expense, Goal, User
 from app.schemas.admin_schemas import (
     AdminStatsResponse,
     AdminUserCreateRequest,
     AdminUserDetailResponse,
     AdminUserListResponse,
     AdminUserUpdateRequest,
+    AuditLogListResponse,
 )
+from app.services.audit import record_audit
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
 password_hasher = PasswordHasher()
+
+
+def _admin_username(db: Session, admin_user_id: str) -> str | None:
+    return db.query(User.username).filter(User.id == int(admin_user_id)).scalar()
 
 
 @router.post("/users", response_model=AdminUserDetailResponse, status_code=201)
@@ -68,6 +74,14 @@ def create_user(
     logger.info(
         "Admin created user: admin_id=%s new_user_id=%s",
         admin_user_id, user.id,
+    )
+    record_audit(
+        db,
+        "admin.user_created",
+        actor_id=int(admin_user_id),
+        actor_username=_admin_username(db, admin_user_id),
+        target_id=user.id,
+        target_username=user.username,
     )
 
     return get_user_detail(user.id, admin_user_id, db)
@@ -203,6 +217,15 @@ def update_user(
         "Admin updated user: admin_id=%s target_user_id=%s is_active=%s is_admin=%s",
         admin_user_id, user_id, user.is_active, user.is_admin,
     )
+    record_audit(
+        db,
+        "admin.user_updated",
+        actor_id=int(admin_user_id),
+        actor_username=_admin_username(db, admin_user_id),
+        target_id=user.id,
+        target_username=user.username,
+        detail=f"is_active={user.is_active}, is_admin={user.is_admin}",
+    )
 
     return get_user_detail(user_id, admin_user_id, db)
 
@@ -225,6 +248,8 @@ def delete_user(
         if not user:
             raise ResourceNotFoundError("User not found")
 
+        deleted_username = user.username
+
         db.delete(user)
         db.commit()
 
@@ -239,5 +264,46 @@ def delete_user(
         "Admin deleted user: admin_id=%s target_user_id=%s",
         admin_user_id, user_id,
     )
+    record_audit(
+        db,
+        "admin.user_deleted",
+        actor_id=int(admin_user_id),
+        actor_username=_admin_username(db, admin_user_id),
+        target_username=deleted_username,
+        detail=f"user_id={user_id}",
+    )
 
     return {"message": "User deleted"}
+
+
+@router.get("/audit-logs", response_model=AuditLogListResponse)
+def list_audit_logs(
+    action: str | None = None,
+    q: str | None = None,
+    limit: int = 200,
+    admin_user_id: str = Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
+    try:
+        query = db.query(AuditLog)
+
+        if action:
+            query = query.filter(AuditLog.action == action)
+
+        if q:
+            like = f"%{q}%"
+            query = query.filter(
+                (AuditLog.actor_username.ilike(like))
+                | (AuditLog.target_username.ilike(like))
+            )
+
+        logs = (
+            query.order_by(AuditLog.created_at.desc())
+            .limit(max(1, min(limit, 500)))
+            .all()
+        )
+
+    except SQLAlchemyError:
+        raise DatabaseError("Database operation failed")
+
+    return {"logs": logs}
