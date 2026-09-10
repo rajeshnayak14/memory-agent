@@ -15,6 +15,7 @@ from app.schemas.memory_schemas import (
     MemoryMutationResponse,
     DeleteAllMemoriesResponse,
 )
+from app.services.memory_store import search_all_memories
 
 
 logger = logging.getLogger(__name__)
@@ -22,30 +23,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter(
     tags=["Memories"],
 )
-
-# store.search() defaults to limit=10, which silently truncated every listing
-# and made bulk delete a no-op past the first page.
-SEARCH_PAGE_SIZE = 100
-
-
-def search_all_memories(user_id: str):
-    """Return every memory for a user, paging past the store's default limit."""
-    results = []
-    offset = 0
-
-    while True:
-        page = store.search(
-            ("memories", user_id),
-            limit=SEARCH_PAGE_SIZE,
-            offset=offset,
-        )
-
-        results.extend(page)
-
-        if len(page) < SEARCH_PAGE_SIZE:
-            return results
-
-        offset += SEARCH_PAGE_SIZE
 
 
 @router.get(

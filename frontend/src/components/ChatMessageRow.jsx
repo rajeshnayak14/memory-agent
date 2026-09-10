@@ -3,6 +3,7 @@ import { Brain, Check, RefreshCw, Pencil } from "lucide-react";
 import BudgetSummaryCard from "./BudgetSummaryCard";
 import ExpenseBreakdownCard from "./ExpenseBreakdownCard";
 import DailyBreakdownCard from "./DailyBreakdownCard";
+import MemorySuggestionCard from "./MemorySuggestionCard";
 
 function Avatar({ isUser }) {
   if (isUser) return null;
@@ -14,7 +15,7 @@ function Avatar({ isUser }) {
   );
 }
 
-export default function ChatMessageRow({ message, onRetry, onEditSubmit }) {
+export default function ChatMessageRow({ message, onRetry, onEditSubmit, onMemorySuggestionDecision }) {
   const isUser = message.role === "user";
   const isError = message.status === "error";
   const isSending = message.status === "sending";
@@ -126,6 +127,14 @@ export default function ChatMessageRow({ message, onRetry, onEditSubmit }) {
           <div className="w-full max-w-sm">
             <DailyBreakdownCard card={message.card} />
           </div>
+        )}
+
+        {!isUser && message.memorySuggestion && (
+          <MemorySuggestionCard
+            suggestion={message.memorySuggestion}
+            onAccept={() => onMemorySuggestionDecision(message.id, true)}
+            onDecline={() => onMemorySuggestionDecision(message.id, false)}
+          />
         )}
 
         {!isEditing && (

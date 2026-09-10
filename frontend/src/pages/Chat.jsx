@@ -9,11 +9,13 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { sendChatMessage } from "../api/chat";
 import { getConversation } from "../api/conversations";
+import { createMemory } from "../api/memories";
 import {
   getOrCreateThreadId,
   resetThreadId,
 } from "../utils/thread";
 import { getErrorMessage } from "../utils/errorMessage";
+import { useToast } from "../context/ToastContext";
 
 import ChatMessageRow from "../components/ChatMessageRow";
 import ChatSidePanel from "../components/ChatSidePanel";
@@ -66,6 +68,7 @@ function normalizeHistory(messages) {
 
 export default function Chat() {
   const { user } = useAuth();
+  const { notify } = useToast();
 
   const [searchParams, setSearchParams] =
     useSearchParams();
@@ -292,7 +295,7 @@ export default function Chat() {
     setSending(true);
 
     try {
-      const { response, card } =
+      const { response, card, memorySuggestion } =
         await sendChatMessage({
           threadId: activeThreadId,
           message: userMessage.content,
@@ -313,6 +316,9 @@ export default function Chat() {
           role: "assistant",
           content: response,
           card: card || null,
+          memorySuggestion: memorySuggestion
+            ? { ...memorySuggestion, status: "pending" }
+            : null,
           status: "sent",
           time: nowLabel(),
         },
@@ -365,6 +371,66 @@ export default function Chat() {
    */
   const handleStop = () => {
     abortControllerRef.current?.abort();
+  };
+
+
+  /*
+   * Respond to a memory suggestion. This is the ONLY place a suggestion
+   * can turn into a saved memory — accepting calls the same createMemory()
+   * the Memories page itself uses, nothing here ever writes to the store
+   * directly. Guarded by the message's own "pending" status so a repeated
+   * click (or a re-render) can't double-save: once a decision is in
+   * flight or made, this becomes a no-op for that message.
+   */
+  const handleMemorySuggestionDecision = (messageId, accept) => {
+    const target = messages.find((m) => m.id === messageId);
+    if (!target?.memorySuggestion || target.memorySuggestion.status !== "pending") {
+      return;
+    }
+
+    if (!accept) {
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === messageId
+            ? { ...m, memorySuggestion: { ...m.memorySuggestion, status: "dismissed" } }
+            : m
+        )
+      );
+      return;
+    }
+
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.id === messageId
+          ? { ...m, memorySuggestion: { ...m.memorySuggestion, status: "saving" } }
+          : m
+      )
+    );
+
+    createMemory(target.memorySuggestion.memory)
+      .then(() => {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === messageId
+              ? { ...m, memorySuggestion: { ...m.memorySuggestion, status: "accepted" } }
+              : m
+          )
+        );
+      })
+      .catch((err) => {
+        notify(
+          getErrorMessage(err, "Could not save that memory."),
+          { type: "error" }
+        );
+
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === messageId
+              ? { ...m, memorySuggestion: { ...m.memorySuggestion, status: "pending" } }
+              : m
+          )
+        );
+      });
   };
 
 
@@ -633,6 +699,7 @@ export default function Chat() {
                     message={message}
                     onRetry={handleRetry}
                     onEditSubmit={handleEditSubmit}
+                    onMemorySuggestionDecision={handleMemorySuggestionDecision}
                   />
                 ))}
 
