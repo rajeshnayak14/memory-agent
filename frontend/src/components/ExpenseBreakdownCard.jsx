@@ -13,7 +13,7 @@ export default function ExpenseBreakdownCard({ card }) {
         </span>
       </div>
 
-      <div className="divide-y divide-border px-4">
+      <div className="max-h-72 overflow-y-auto divide-y divide-border px-4">
         {card.items.map((item) => (
           <div
             key={`${item.category}-${item.currency}`}
