@@ -115,9 +115,10 @@ export default function ChatMessageRow({ message, onRetry, onEditSubmit, onMemor
               <p className="whitespace-pre-wrap">{message.content}</p>
 
               {isSending && (
-                <div className="mt-1.5 flex items-center gap-1.5">
-                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-current opacity-60" />
-                  <span className="text-xs opacity-70">Sending…</span>
+                <div className="mt-1.5 flex items-center gap-1" aria-label="Sending" role="status">
+                  <span className="typing-dot h-1.5 w-1.5 rounded-full bg-current [animation-delay:-0.3s]" />
+                  <span className="typing-dot h-1.5 w-1.5 rounded-full bg-current [animation-delay:-0.15s]" />
+                  <span className="typing-dot h-1.5 w-1.5 rounded-full bg-current" />
                 </div>
               )}
             </div>
