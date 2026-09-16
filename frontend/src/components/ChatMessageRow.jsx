@@ -48,6 +48,15 @@ export default function ChatMessageRow({ message, onRetry, onEditSubmit, onMemor
   // sitting alongside it.
   const hasCard = !isUser && Boolean(message.card);
 
+  // The two breakdown cards are genuine tables (many rows), so they should
+  // use the chat column's available width instead of being squeezed into
+  // the same narrow measure as a text bubble. The budget summary card is
+  // only ever 3 fixed label/value rows — widening it would just add empty
+  // space, so it keeps the original bubble-width treatment.
+  const isWideCard =
+    hasCard &&
+    (message.card.type === "expense_breakdown" || message.card.type === "daily_breakdown");
+
   const bubbleClass = isUser
     ? "bg-accent-subtle text-primary"
     : isError
@@ -55,10 +64,14 @@ export default function ChatMessageRow({ message, onRetry, onEditSubmit, onMemor
       : "border border-border bg-surface text-primary";
 
   return (
-    <div className={`group flex gap-3 py-2 ${isUser ? "flex-row-reverse" : ""}`}>
+    <div className={`group flex gap-3 py-2 ${isUser ? "flex-row-reverse" : ""} ${isWideCard ? "min-w-0 flex-1" : ""}`}>
       <Avatar isUser={isUser} />
 
-      <div className={`flex max-w-[75%] flex-col ${isUser ? "items-end" : "items-start"}`}>
+      <div
+        className={`flex flex-col ${isUser ? "items-end" : "items-start"} ${
+          isWideCard ? "min-w-0 w-full max-w-full" : "max-w-[75%]"
+        }`}
+      >
         {isEditing ? (
           <div className="w-full min-w-[240px] rounded-2xl border border-focus bg-surface px-3 py-2.5">
             <textarea
@@ -118,13 +131,13 @@ export default function ChatMessageRow({ message, onRetry, onEditSubmit, onMemor
         )}
 
         {!isUser && message.card?.type === "expense_breakdown" && (
-          <div className="w-full max-w-sm">
+          <div className="w-full">
             <ExpenseBreakdownCard card={message.card} />
           </div>
         )}
 
         {!isUser && message.card?.type === "daily_breakdown" && (
-          <div className="w-full max-w-sm">
+          <div className="w-full">
             <DailyBreakdownCard card={message.card} />
           </div>
         )}

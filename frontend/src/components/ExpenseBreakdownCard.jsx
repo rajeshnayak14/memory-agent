@@ -13,14 +13,22 @@ export default function ExpenseBreakdownCard({ card }) {
         </span>
       </div>
 
-      <div className="max-h-72 overflow-y-auto divide-y divide-border px-4">
+      {/* auto-fit/minmax rather than viewport-breakpoint column counts: this
+          card can sit next to a sidebar and the chat side panel, so the
+          space actually available to it is not the same as the viewport
+          width a sm:/lg: breakpoint would assume. auto-fit measures the
+          real rendered container and fits as many >=150px columns as
+          actually fit, so it adapts correctly either way. */}
+      <div className="grid max-h-96 grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-x-6 overflow-y-auto px-3 py-2 sm:px-4">
         {card.items.map((item) => (
           <div
             key={`${item.category}-${item.currency}`}
-            className="flex items-center justify-between gap-3 py-2 text-sm"
+            className="flex min-w-0 items-center justify-between gap-3 rounded-lg px-1.5 py-2 text-sm hover:bg-surface-hover"
           >
-            <span className="capitalize text-secondary">{item.category}</span>
-            <span className="font-mono font-semibold text-primary">
+            <span className="min-w-0 flex-1 truncate capitalize text-secondary">
+              {item.category}
+            </span>
+            <span className="shrink-0 font-mono font-semibold text-primary">
               {formatMoney(item.amount, item.currency)}
               {showCurrency && (
                 <span className="ml-1 text-xs font-normal text-faint">

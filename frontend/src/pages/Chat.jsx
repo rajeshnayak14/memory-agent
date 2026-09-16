@@ -598,7 +598,7 @@ export default function Chat() {
   return (
     <div className="flex h-full min-h-0 bg-page text-primary">
 
-      <div className="flex min-h-0 flex-1 flex-col">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
 
         <header className="flex shrink-0 items-center justify-between gap-2 border-b border-border bg-surface px-4 py-3 sm:px-10 sm:py-3.5">
 
@@ -636,9 +636,9 @@ export default function Chat() {
         </header>
 
 
-        <div className="flex min-h-0 flex-1 overflow-y-auto px-5 sm:px-8">
+        <div className="flex min-h-0 min-w-0 flex-1 overflow-y-auto px-5 sm:px-8">
 
-          <div className="mx-auto flex w-full max-w-3xl flex-col py-6 sm:py-8">
+          <div className="mx-auto flex w-full min-w-0 max-w-3xl flex-col py-6 sm:py-8">
 
             {loadingHistory ? (
 
@@ -691,7 +691,7 @@ export default function Chat() {
 
             ) : (
 
-              <div className="flex flex-col gap-1">
+              <div className="flex min-w-0 flex-col gap-1">
 
                 {messages.map((message) => (
                   <ChatMessageRow

@@ -23,10 +23,23 @@ export default function DailyBreakdownCard({ card }) {
         </span>
       </div>
 
-      <div className="max-h-80 divide-y divide-border overflow-y-auto px-4">
+      {/* CSS multi-column, sized by column-width rather than a fixed count:
+          a fixed sm:/xl: column count reacts to VIEWPORT width, but this
+          card can sit next to a sidebar and the chat side panel, so the
+          space actually available to it is often much narrower than the
+          viewport. columns-[Npx] instead measures the real rendered
+          container and fits as many columns of that width as actually
+          fit. Columns (vs. grid) also means days vary in how many line
+          items they have without a grid's row-major flow stranding a
+          short day next to a tall row-mate in empty space — a busy day
+          just makes its own column longer. */}
+      <div className="max-h-[28rem] columns-[15rem] gap-x-8 overflow-y-auto px-4 py-3">
         {card.days.map((day) => (
-          <div key={day.date} className="py-2.5">
-            <p className="mb-1 text-xs text-">
+          <div
+            key={day.date}
+            className="mb-4 min-w-0 break-inside-avoid pb-1"
+          >
+            <p className="mb-1.5 text-xs text-muted">
               {formatDayHeading(day.date)}
             </p>
 
@@ -34,10 +47,12 @@ export default function DailyBreakdownCard({ card }) {
               {day.items.map((item) => (
                 <div
                   key={`${item.category}-${item.currency}`}
-                  className="flex items-center justify-between gap-3 text-sm"
+                  className="flex min-w-0 items-center justify-between gap-3 text-sm"
                 >
-                  <span className="capitalize text-secondary">{item.category}</span>
-                  <span className="font-mono font-semibold text-primary">
+                  <span className="min-w-0 flex-1 truncate capitalize text-secondary">
+                    {item.category}
+                  </span>
+                  <span className="shrink-0 font-mono font-semibold text-primary">
                     {formatMoney(item.amount, item.currency)}
                     {showCurrency && (
                       <span className="ml-1 text-xs font-normal text-faint">
