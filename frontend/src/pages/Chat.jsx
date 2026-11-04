@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import {
   MessageSquare,
+  Mic,
+  MicOff,
   Send,
   Square,
   SquarePen,
@@ -98,10 +100,17 @@ export default function Chat() {
 
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+
+  const voiceSupported =
+    typeof window !== "undefined" &&
+    Boolean(window.SpeechRecognition || window.webkitSpeechRecognition);
 
   const bottomRef = useRef(null);
   const textareaRef = useRef(null);
   const abortControllerRef = useRef(null);
+  const recognitionRef = useRef(null);
+  const inputBaseRef = useRef("");
 
 
   /*
@@ -465,6 +474,56 @@ export default function Chat() {
 
 
   /*
+   * Voice input.
+   */
+  const handleVoiceToggle = () => {
+    if (isListening) {
+      recognitionRef.current?.stop();
+      return;
+    }
+
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) return;
+
+    const recognition = new SR();
+    recognition.lang = "en-US";
+    recognition.interimResults = true;
+    recognition.continuous = false;
+
+    inputBaseRef.current = input;
+
+    recognition.onresult = (event) => {
+      const transcript = Array.from(event.results)
+        .map((r) => r[0].transcript)
+        .join("");
+
+      const base = inputBaseRef.current;
+      const next = base ? `${base} ${transcript}` : transcript;
+      setInput(next);
+
+      if (textareaRef.current) {
+        textareaRef.current.style.height = "auto";
+        textareaRef.current.style.height =
+          `${Math.min(textareaRef.current.scrollHeight, 180)}px`;
+      }
+    };
+
+    recognition.onerror = (event) => {
+      setIsListening(false);
+      if (event.error === "not-allowed") {
+        notify("Microphone access denied. Allow it in browser settings.", { type: "error" });
+      }
+    };
+
+    recognition.onend = () => setIsListening(false);
+
+    recognitionRef.current = recognition;
+    recognition.start();
+    setIsListening(true);
+  };
+
+
+  /*
    * Send.
    */
   const handleSend = () => {
@@ -477,6 +536,8 @@ export default function Chat() {
     ) {
       return;
     }
+
+    recognitionRef.current?.stop();
 
     const userMessage = {
       id: crypto.randomUUID(),
@@ -728,9 +789,28 @@ export default function Chat() {
                   value={input}
                   onChange={autoGrow}
                   onKeyDown={handleKeyDown}
-                  placeholder="Message Mnemos..."
+                  placeholder={isListening ? "Listening…" : "Message Mnemos…"}
                   className="min-h-[42px] max-h-[180px] flex-1 resize-none bg-transparent px-2.5 py-2 text-sm leading-6 text-primary outline-none placeholder:text-faint"
                 />
+
+                {voiceSupported && (
+                  <button
+                    type="button"
+                    onClick={handleVoiceToggle}
+                    aria-label={isListening ? "Stop listening" : "Voice input"}
+                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors ${
+                      isListening
+                        ? "animate-pulse bg-red-500 text-white"
+                        : "text-muted hover:bg-surface-hover hover:text-primary"
+                    }`}
+                  >
+                    {isListening ? (
+                      <MicOff size={16} strokeWidth={1.9} />
+                    ) : (
+                      <Mic size={16} strokeWidth={1.9} />
+                    )}
+                  </button>
+                )}
 
                 <button
                   type="button"
@@ -762,7 +842,7 @@ export default function Chat() {
               <div className="flex items-center justify-between px-2.5 pb-1 pt-1">
 
                 <span className="font-mono text-[10px] text-faint">
-                  Enter to send · Shift + Enter for new line
+                  Enter to send · Shift+Enter for new line{voiceSupported ? " · mic to speak" : ""}
                 </span>
 
                 <span className="font-mono text-[10px] text-faint">

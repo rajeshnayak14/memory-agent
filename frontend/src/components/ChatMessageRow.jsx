@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Brain, Check, RefreshCw, Pencil } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 import BudgetSummaryCard from "./BudgetSummaryCard";
 import ExpenseBreakdownCard from "./ExpenseBreakdownCard";
 import DailyBreakdownCard from "./DailyBreakdownCard";
@@ -112,7 +113,23 @@ export default function ChatMessageRow({ message, onRetry, onEditSubmit, onMemor
         ) : (
           !hasCard && (
             <div className={`rounded-2xl px-4 py-2.5 text-sm leading-6 ${bubbleClass}`}>
-              <p className="whitespace-pre-wrap">{message.content}</p>
+              {isUser ? (
+                <p className="whitespace-pre-wrap">{message.content}</p>
+              ) : (
+                <div className="prose-chat">
+                  <ReactMarkdown
+                    components={{
+                      p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                      strong: ({ children }) => <strong className="font-semibold text-primary">{children}</strong>,
+                      ul: ({ children }) => <ul className="mb-2 space-y-0.5 pl-4 last:mb-0">{children}</ul>,
+                      li: ({ children }) => <li className="list-disc text-secondary">{children}</li>,
+                      code: ({ children }) => <code className="rounded bg-surface-subtle px-1 py-0.5 font-mono text-xs">{children}</code>,
+                    }}
+                  >
+                    {message.content}
+                  </ReactMarkdown>
+                </div>
+              )}
 
               {isSending && (
                 <div className="mt-1.5 flex items-center gap-1" aria-label="Sending" role="status">

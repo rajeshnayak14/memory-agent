@@ -472,11 +472,19 @@ export default function AppLayout() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => {
+    try { return localStorage.getItem("mnemos.sidebar.collapsed") === "true"; }
+    catch { return false; }
+  });
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const [conversations, setConversations] =
-    useState([]);
+  const [conversations, setConversations] = useState([]);
   const [panel, setPanel] = useState(null);
+
+  const toggleCollapsed = (next) => {
+    const val = typeof next === "boolean" ? next : !collapsed;
+    setCollapsed(val);
+    try { localStorage.setItem("mnemos.sidebar.collapsed", String(val)); } catch {}
+  };
 
   useEffect(() => {
     setMobileNavOpen(false);
@@ -612,6 +620,8 @@ export default function AppLayout() {
 
   return (
     <div className="flex h-dvh overflow-hidden bg-page text-primary">
+
+      {/* Mobile backdrop */}
       {mobileNavOpen && (
         <div
           className="fixed inset-0 z-30 bg-black/50 lg:hidden"
@@ -619,192 +629,142 @@ export default function AppLayout() {
         />
       )}
 
+      {/* ── Sidebar ── */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-[82vw] max-w-[640px] shrink-0 flex-col border-r border-border bg-surface shadow-2xl transition-transform duration-200 lg:static lg:z-auto lg:max-w-none lg:shadow-none lg:transition-[width] lg:translate-x-0 ${
-          mobileNavOpen ? "translate-x-0" : "-translate-x-full"
-        } ${collapsed ? "lg:w-[64px]" : "lg:w-[260px]"}`}
+        className={`
+          fixed inset-y-0 left-0 z-40 flex h-dvh shrink-0 flex-col
+          border-r border-border bg-surface
+          shadow-2xl transition-transform duration-200
+          lg:static lg:z-auto lg:shadow-none lg:translate-x-0 lg:transition-[width]
+          ${mobileNavOpen ? "translate-x-0" : "-translate-x-full"}
+          ${collapsed ? "w-[72px]" : "w-[280px] lg:w-[260px]"}
+        `}
       >
-        <div
-          className={`flex h-16 items-center justify-between px-3 ${
-            collapsed ? "lg:justify-center lg:px-0" : ""
-          }`}
-        >
-          <Brand collapsed={collapsed} />
+        {/* Single scrollable content area — everything scrolls together except the profile */}
+        <div className="sidebar-scroll flex-1 overflow-y-auto">
 
-          {!collapsed && (
+          {/* Header */}
+          <div className={`flex h-14 items-center px-2 ${collapsed ? "justify-center" : "justify-between"}`}>
+            {!collapsed && <Brand collapsed={false} />}
+
             <button
               type="button"
-              onClick={() =>
-                setCollapsed(true)
-              }
-              title="Collapse sidebar"
-              className="hidden rounded-2xl p-2 text-muted transition-colors hover:bg-surface-hover hover:text-primary lg:block"
+              onClick={() => toggleCollapsed()}
+              title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+              className="hidden rounded-xl p-2 text-muted transition-colors hover:bg-surface-hover hover:text-primary lg:flex"
             >
-              <PanelLeft size={18} />
+              <PanelLeft size={18} strokeWidth={1.8} />
             </button>
-          )}
-        </div>
 
-        {collapsed && (
-          <button
-            type="button"
-            onClick={() =>
-              setCollapsed(false)
-            }
-            title="Open sidebar"
-            className="mx-auto mb-3 hidden rounded-2xl p-2 text-secondary transition-colors hover:bg-surface-hover hover:text-primary lg:block"
-          >
-            <PanelLeft size={18} />
-          </button>
-        )}
-
-        <div className="flex flex-col gap-1 px-2">
-          <SidebarButton
-            icon={SquarePen}
-            label="New chat"
-            collapsed={collapsed}
-            onClick={newChat}
-          />
-
-          <SidebarButton
-            icon={Search}
-            label="Search"
-            collapsed={collapsed}
-            onClick={() => {
-              setPanel("search");
-              setMobileNavOpen(false);
-            }}
-          />
-
-          {collapsed && (
-            <SidebarButton
-              icon={Clock3}
-              label="Recents"
-              collapsed={collapsed}
-              onClick={() => {
-                setPanel("recents");
-                setMobileNavOpen(false);
-              }}
-            />
-          )}
-        </div>
-
-        {!collapsed && (
-          <div className="mt-6 max-h-[32vh] min-h-0 overflow-y-auto px-2 lg:max-h-none lg:flex-1">
-            <div className="mb-2 flex items-center justify-between px-3">
-              <p className="text-sm text-muted">
-                Recent chats
-              </p>
-
-              {conversations.length > 0 && (
-                <span className="font-mono text-[10px] text-faint">
-                  {conversations.length}
-                </span>
-              )}
-            </div>
-
-            <div className="space-y-0.5">
-              {conversations.map(
-                (conversation) => (
-                  <RecentItem
-                    key={conversation.thread_id}
-                    conversation={conversation}
-                    collapsed={collapsed}
-                    onClick={() =>
-                      openConversation(
-                        conversation
-                      )
-                    }
-                    onDelete={
-                      handleDeleteConversation
-                    }
-                  />
-                )
-              )}
-
-              {conversations.length === 0 && (
-                <p className="px-3 py-2 text-xs leading-5 text-faint">
-                  Conversations will appear here as you chat.
-                </p>
-              )}
-            </div>
+            <button
+              type="button"
+              onClick={() => setMobileNavOpen(false)}
+              aria-label="Close menu"
+              className="rounded-xl p-2 text-muted transition-colors hover:bg-surface-hover hover:text-primary lg:hidden"
+            >
+              <X size={18} strokeWidth={1.8} />
+            </button>
           </div>
-        )}
 
-        {!collapsed && (
-          <div className="shrink-0 px-2">
-            <div className="my-5 border-t border-border" />
+          {/* Quick actions */}
+          <div className="px-2 pb-1 flex flex-col gap-0.5">
+            <SidebarButton icon={SquarePen} label="New chat" collapsed={collapsed} onClick={newChat} />
+            <SidebarButton
+              icon={Search}
+              label="Search"
+              collapsed={collapsed}
+              onClick={() => { setPanel("search"); setMobileNavOpen(false); }}
+            />
+            {collapsed && (
+              <SidebarButton
+                icon={Clock3}
+                label="Recents"
+                collapsed={collapsed}
+                onClick={() => { setPanel("recents"); setMobileNavOpen(false); }}
+              />
+            )}
+          </div>
 
-            <div className="space-y-1">
-              {navItems.map(
-                ({
-                  to,
-                  label,
-                  icon: Icon,
-                  tourId,
-                }) => (
+          {/* Navigation */}
+          <div className="px-2 pt-3 pb-2">
+            {!collapsed && (
+              <p className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-widest text-faint">
+                Menu
+              </p>
+            )}
+            <div className={`flex flex-col gap-0.5 ${collapsed ? "items-center" : ""}`}>
+              {navItems.map(({ to, label, icon: Icon, tourId }) =>
+                collapsed ? (
+                  <NavLink
+                    key={to}
+                    to={to}
+                    title={label}
+                    data-tour={tourId}
+                    className={({ isActive }) =>
+                      `flex h-10 w-10 items-center justify-center rounded-xl transition-colors ${
+                        isActive ? "bg-accent-subtle text-accent" : "text-secondary hover:bg-surface-hover hover:text-primary"
+                      }`
+                    }
+                  >
+                    <Icon size={18} strokeWidth={1.8} />
+                  </NavLink>
+                ) : (
                   <NavLink
                     key={to}
                     to={to}
                     data-tour={tourId}
-                    className={({
-                      isActive,
-                    }) =>
-                      `flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm transition-colors ${
-                        isActive
-                          ? "bg-accent-subtle text-accent"
-                          : "text-secondary hover:bg-surface-hover hover:text-primary"
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition-colors ${
+                        isActive ? "bg-accent-subtle text-accent" : "text-secondary hover:bg-surface-hover hover:text-primary"
                       }`
                     }
                   >
-                    <Icon
-                      size={18}
-                      strokeWidth={1.8}
-                    />
-
+                    <Icon size={18} strokeWidth={1.8} />
                     <span>{label}</span>
                   </NavLink>
                 )
               )}
             </div>
           </div>
-        )}
 
-        {collapsed && (
-          <div className="mt-4 flex flex-1 flex-col items-center gap-1 px-2">
-            {navItems.map(
-              ({
-                to,
-                label,
-                icon: Icon,
-                tourId,
-              }) => (
-                <NavLink
-                  key={to}
-                  to={to}
-                  title={label}
-                  data-tour={tourId}
-                  className={({
-                    isActive,
-                  }) =>
-                    `flex h-10 w-10 items-center justify-center rounded-2xl transition-colors ${
-                      isActive
-                        ? "bg-accent-subtle text-accent"
-                        : "text-secondary hover:bg-surface-hover hover:text-primary"
-                    }`
-                  }
-                >
-                  <Icon
-                    size={18}
-                    strokeWidth={1.8}
-                  />
-                </NavLink>
-              )
-            )}
-          </div>
-        )}
+          {/* Recent chats — flows naturally after nav, no fixed height or independent scroll */}
+          {!collapsed && (
+            <div className="px-2 pt-2 pb-4">
+              <div className="mb-1 flex items-center justify-between border-t border-border px-3 pt-3">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-faint">
+                  Recent
+                </p>
+                {conversations.length > 0 && (
+                  <span className="font-mono text-[10px] text-faint">
+                    {conversations.length}
+                  </span>
+                )}
+              </div>
 
-        <div className="border-t border-border p-2">
+              {conversations.length === 0 ? (
+                <p className="px-3 py-3 text-xs leading-5 text-faint">
+                  Conversations will appear here as you chat.
+                </p>
+              ) : (
+                <div className="space-y-0.5">
+                  {conversations.map((conversation) => (
+                    <RecentItem
+                      key={conversation.thread_id}
+                      conversation={conversation}
+                      collapsed={false}
+                      onClick={() => openConversation(conversation)}
+                      onDelete={handleDeleteConversation}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+        </div>
+
+        {/* User profile — fixed at bottom, outside the scroll area */}
+        <div className="shrink-0 border-t border-border p-2">
           <UserBlock
             collapsed={collapsed}
             onLogout={logout}
@@ -813,24 +773,18 @@ export default function AppLayout() {
         </div>
       </aside>
 
+      {/* ── Main content ── */}
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+        {/* Mobile topbar */}
         <div className="flex h-14 shrink-0 items-center gap-3 border-b border-border bg-surface px-4 lg:hidden">
           <button
             type="button"
-            onClick={() => {
-              // The desktop icon-only "collapsed" mode has no meaning on
-              // mobile (the drawer has no room for it) — reset it so a
-              // collapsed state left over from a desktop-width session
-              // can never bleed into the mobile drawer's layout.
-              setCollapsed(false);
-              setMobileNavOpen(true);
-            }}
+            onClick={() => { setCollapsed(false); setMobileNavOpen(true); }}
             aria-label="Open menu"
-            className="rounded-2xl p-2 text-secondary transition-colors hover:bg-surface-hover hover:text-primary"
+            className="rounded-xl p-2 text-secondary transition-colors hover:bg-surface-hover hover:text-primary"
           >
             <Menu size={20} strokeWidth={1.8} />
           </button>
-
           <Brand collapsed={false} />
         </div>
 
@@ -839,13 +793,12 @@ export default function AppLayout() {
         </main>
       </div>
 
+      {/* ── Panels ── */}
       {panel === "search" && (
         <SearchPanel
           conversations={conversations}
           onSelect={openConversation}
-          onClose={() =>
-            setPanel(null)
-          }
+          onClose={() => setPanel(null)}
         />
       )}
 
@@ -853,9 +806,7 @@ export default function AppLayout() {
         <RecentsPanel
           conversations={conversations}
           onSelect={openConversation}
-          onClose={() =>
-            setPanel(null)
-          }
+          onClose={() => setPanel(null)}
         />
       )}
 
