@@ -182,6 +182,51 @@ def get_conversation(
     }
 
 
+class ConversationRenameRequest(BaseModel):
+    title: str
+
+
+@router.patch("/conversations/{thread_id}")
+def rename_conversation(
+    thread_id: str,
+    request: ConversationRenameRequest,
+    user_id: str = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    title = request.title.strip()
+    if not title:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=422, detail="Title cannot be empty.")
+
+    try:
+        conversation = (
+            db.query(Conversation)
+            .filter(
+                Conversation.user_id == int(user_id),
+                Conversation.thread_id == thread_id,
+            )
+            .first()
+        )
+
+        if not conversation:
+            from fastapi import HTTPException
+            raise HTTPException(status_code=404, detail="Conversation not found.")
+
+        conversation.title = title[:200]
+        db.commit()
+
+    except SQLAlchemyError:
+        db.rollback()
+        raise DatabaseError("Database operation failed")
+
+    logger.info(
+        "Conversation renamed: user_id=%s thread_id=%s title=%r",
+        user_id, thread_id, title,
+    )
+
+    return {"title": conversation.title}
+
+
 @router.delete("/conversations/{thread_id}")
 def delete_conversation(
     thread_id: str,

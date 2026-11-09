@@ -154,9 +154,9 @@ class Expense(Base):
         nullable=False,
     )
 
-    category: Mapped[str] = mapped_column(
+    category: Mapped[str | None] = mapped_column(
         String(100),
-        nullable=False,
+        nullable=True,
     )
 
     description: Mapped[str] = mapped_column(

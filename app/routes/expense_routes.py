@@ -213,6 +213,8 @@ def get_expenses_breakdown(
     totals = {}
 
     for expense in expenses:
+        if not expense.category:
+            continue
         key = (expense.category, expense.currency)
         totals.setdefault(key, 0.0)
         totals[key] += float(expense.amount)
@@ -264,6 +266,44 @@ def get_expenses_daily_breakdown(
     ]
 
     return {"daily": daily}
+
+
+@router.delete("/expenses/by-category")
+def clear_category_from_expenses(
+    category: str,
+    user_id: str = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Clear the category label from expenses that use it.
+
+    Expenses are kept; only their category field is set to None so the
+    unregistered category disappears from the Categories page.
+    """
+    user_id_int = int(user_id)
+
+    try:
+        rows = (
+            db.query(Expense)
+            .filter(
+                Expense.user_id == user_id_int,
+                Expense.category == category,
+            )
+            .all()
+        )
+        for expense in rows:
+            expense.category = None
+        db.commit()
+
+    except SQLAlchemyError:
+        db.rollback()
+        raise DatabaseError("Database operation failed")
+
+    logger.info(
+        "Category label cleared: user_id=%s category=%r count=%d",
+        user_id, category, len(rows),
+    )
+
+    return {"cleared": len(rows)}
 
 
 # ============================================================

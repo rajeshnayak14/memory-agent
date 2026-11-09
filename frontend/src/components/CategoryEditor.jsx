@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   Tag,
   ShoppingCart,
@@ -12,6 +12,7 @@ import {
   Wifi,
   Shirt,
   Gift,
+  Pipette,
 } from "lucide-react";
 import Button from "./Button";
 
@@ -56,6 +57,9 @@ export default function CategoryEditor({
   const [color, setColor] = useState(initial.color ?? SWATCHES[0]);
   const [keywords, setKeywords] = useState(initial.keywords ?? "");
   const [error, setError] = useState("");
+  const colorInputRef = useRef(null);
+
+  const isCustomColor = !SWATCHES.includes(color);
 
   const handleSave = () => {
     const trimmed = name.trim();
@@ -113,7 +117,7 @@ export default function CategoryEditor({
 
       <div className="mt-3">
         <p className="mb-1.5 text-xs font-medium text-muted">Color</p>
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5">
           {SWATCHES.map((swatch) => (
             <button
               key={swatch}
@@ -126,6 +130,31 @@ export default function CategoryEditor({
               style={{ backgroundColor: swatch }}
             />
           ))}
+
+          {/* Custom color picker */}
+          <button
+            type="button"
+            onClick={() => colorInputRef.current?.click()}
+            title="Custom color"
+            className={`relative flex h-7 w-7 items-center justify-center rounded-full ring-2 transition-shadow ${
+              isCustomColor ? "ring-primary" : "ring-transparent hover:ring-border"
+            }`}
+            style={{ backgroundColor: isCustomColor ? color : undefined }}
+          >
+            {!isCustomColor && (
+              <span className="flex h-full w-full items-center justify-center rounded-full border border-dashed border-border text-faint">
+                <Pipette size={12} strokeWidth={1.8} />
+              </span>
+            )}
+            <input
+              ref={colorInputRef}
+              type="color"
+              value={color}
+              onChange={(e) => setColor(e.target.value)}
+              className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+              aria-label="Custom color"
+            />
+          </button>
         </div>
       </div>
 

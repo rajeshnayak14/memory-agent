@@ -7,7 +7,6 @@ import {
   PiggyBank,
   Repeat,
   BarChart3,
-  Trash2,
 } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
@@ -112,27 +111,8 @@ export default function Expenses() {
   const [pendingDelete, setPendingDelete] = useState(null);
   const [deleteSubmitting, setDeleteSubmitting] = useState(false);
 
-  const [selectedIds, setSelectedIds] = useState(new Set());
-
-  const toggleSelect = (id) =>
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-
-  const toggleSelectAll = () =>
-    setSelectedIds((prev) =>
-      prev.size === expenses.length
-        ? new Set()
-        : new Set(expenses.map((e) => e.id))
-    );
-
-  const clearSelection = () => setSelectedIds(new Set());
-
   const refreshExpenses = useCallback(() => {
     const params = period ? { period } : {};
-    setSelectedIds(new Set());
     return Promise.all([
       listExpenses(params).then((data) => setExpenses(data.expenses)),
       getExpenseBreakdown(params).then((data) => setBreakdown(data.breakdown)),
@@ -311,15 +291,7 @@ export default function Expenses() {
       if (pendingDelete.kind === "expense") {
         await deleteExpense(pendingDelete.item.id);
         await refreshExpenses();
-        clearSelection();
         notify("Expense deleted.");
-      } else if (pendingDelete.kind === "bulkExpense") {
-        await Promise.all(
-          [...pendingDelete.ids].map((id) => deleteExpense(id))
-        );
-        await refreshExpenses();
-        clearSelection();
-        notify(`${pendingDelete.ids.size} expenses deleted.`);
       } else if (pendingDelete.kind === "budget") {
         await deleteBudget(pendingDelete.item.id);
         await refreshBudgets();
@@ -457,30 +429,9 @@ export default function Expenses() {
                 icon={Receipt}
                 title="Expenses"
                 action={
-                  <div className="flex items-center gap-3">
-                    {selectedIds.size > 0 && (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setPendingDelete({ kind: "bulkExpense", ids: selectedIds })
-                        }
-                        className="flex items-center gap-1.5 rounded-2xl bg-danger px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-danger/90"
-                      >
-                        <Trash2 size={12} strokeWidth={2} />
-                        Remove {selectedIds.size}
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={toggleSelectAll}
-                      className="text-xs font-medium text-secondary transition-colors hover:text-primary"
-                    >
-                      {selectedIds.size === expenses.length ? "Deselect all" : "Select all"}
-                    </button>
-                    <span className="font-mono text-[10px] text-faint">
-                      {expenses.length}
-                    </span>
-                  </div>
+                  <span className="font-mono text-[10px] text-faint">
+                    {expenses.length}
+                  </span>
                 }
               />
               {expenses.map((expense) => (
@@ -491,8 +442,6 @@ export default function Expenses() {
                   updating={updatingExpenseId === expense.id}
                   onUpdate={handleUpdateExpense}
                   onDelete={(item) => setPendingDelete({ kind: "expense", item })}
-                  selected={selectedIds.has(expense.id)}
-                  onSelect={toggleSelect}
                 />
               ))}
             </div>
@@ -679,11 +628,9 @@ export default function Expenses() {
           title={
             pendingDelete?.kind === "expense"
               ? "Delete this expense?"
-              : pendingDelete?.kind === "bulkExpense"
-                ? `Delete ${pendingDelete.ids.size} expense${pendingDelete.ids.size === 1 ? "" : "s"}?`
-                : pendingDelete?.kind === "budget"
-                  ? "Delete this budget?"
-                  : "Delete this recurring rule?"
+              : pendingDelete?.kind === "budget"
+                ? "Delete this budget?"
+                : "Delete this recurring rule?"
           }
           description="This can't be undone."
           confirmLabel="Delete"

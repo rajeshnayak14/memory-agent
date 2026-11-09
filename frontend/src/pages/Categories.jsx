@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Tag, Plus, AlertTriangle, Sparkles } from "lucide-react";
+import { Tag, Plus, AlertTriangle, Sparkles, Trash2 } from "lucide-react";
 
 import {
   listCategories,
@@ -7,7 +7,7 @@ import {
   updateCategory,
   deleteCategory,
 } from "../api/categories";
-import { getExpenseBreakdown } from "../api/expenses";
+import { clearExpenseCategory, getExpenseBreakdown } from "../api/expenses";
 import { getErrorMessage } from "../utils/errorMessage";
 import { useToast } from "../context/ToastContext";
 import { formatMoney } from "../utils/currency";
@@ -20,9 +20,17 @@ import CategoryEditor from "../components/CategoryEditor";
 import CategoryRow from "../components/CategoryRow";
 
 // Row for a category that exists in expenses but hasn't been registered yet.
-function UnregisteredRow({ entry, onRegister }) {
+function UnregisteredRow({ entry, onRegister, onDelete, selected, onSelect }) {
   return (
-    <div className="group flex items-center gap-3 border-b border-border bg-surface px-4 py-3.5 last:border-b-0 hover:bg-surface-hover transition-colors">
+    <div className={`group flex items-center gap-3 border-b border-border px-4 py-3.5 last:border-b-0 transition-colors ${selected ? "bg-accent-subtle" : "bg-surface hover:bg-surface-hover"}`}>
+      <input
+        type="checkbox"
+        checked={selected}
+        onChange={() => onSelect(entry.category)}
+        aria-label={`Select ${entry.category}`}
+        className="h-4 w-4 shrink-0 cursor-pointer accent-accent"
+      />
+
       <div className="icon-blob flex h-9 w-9 shrink-0 items-center justify-center bg-surface-subtle text-faint">
         <Tag size={16} strokeWidth={1.8} />
       </div>
@@ -36,15 +44,26 @@ function UnregisteredRow({ entry, onRegister }) {
         </p>
       </div>
 
-      <button
-        type="button"
-        onClick={() => onRegister(entry.category)}
-        title="Register this category"
-        className="flex shrink-0 items-center gap-1.5 rounded-2xl border border-accent-border bg-accent-subtle px-3 py-1.5 text-xs font-medium text-accent opacity-100 transition-colors hover:bg-accent/10 sm:opacity-0 sm:group-hover:opacity-100"
-      >
-        <Plus size={13} strokeWidth={2} />
-        Register
-      </button>
+      <div className="flex shrink-0 items-center gap-2">
+        <button
+          type="button"
+          onClick={() => onRegister(entry.category)}
+          title="Register this category"
+          className="flex items-center gap-1.5 rounded-2xl border border-accent-border bg-accent-subtle px-3 py-1.5 text-xs font-medium text-accent opacity-0 transition-colors hover:bg-accent/10 group-hover:opacity-100"
+        >
+          <Plus size={13} strokeWidth={2} />
+          Register
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onDelete(entry.category)}
+          title="Remove category label"
+          className="rounded-full p-2 text-faint opacity-0 transition-colors hover:bg-danger-subtle hover:text-danger group-hover:opacity-100"
+        >
+          <Trash2 size={15} strokeWidth={1.9} />
+        </button>
+      </div>
     </div>
   );
 }
@@ -63,6 +82,11 @@ export default function Categories() {
   const [updatingId, setUpdatingId] = useState(null);
   const [pendingDelete, setPendingDelete] = useState(null);
   const [deleteSubmitting, setDeleteSubmitting] = useState(false);
+
+  // unregistered multi-select
+  const [selectedUnreg, setSelectedUnreg] = useState(new Set());
+  const [pendingClear, setPendingClear] = useState(null); // single category name or "bulk"
+  const [clearSubmitting, setClearSubmitting] = useState(false);
 
   const refresh = useCallback(() => {
     return Promise.all([
@@ -142,6 +166,42 @@ export default function Categories() {
       notify(getErrorMessage(err, "Could not delete category."), { type: "error" });
     } finally {
       setDeleteSubmitting(false);
+    }
+  };
+
+  const toggleUnreg = (name) =>
+    setSelectedUnreg((prev) => {
+      const next = new Set(prev);
+      next.has(name) ? next.delete(name) : next.add(name);
+      return next;
+    });
+
+  const toggleAllUnreg = () =>
+    setSelectedUnreg((prev) =>
+      prev.size === unregistered.length
+        ? new Set()
+        : new Set(unregistered.map((e) => e.category))
+    );
+
+  const handleConfirmClear = async () => {
+    if (!pendingClear) return;
+    setClearSubmitting(true);
+    const targets =
+      pendingClear === "bulk" ? [...selectedUnreg] : [pendingClear];
+    try {
+      await Promise.all(targets.map((cat) => clearExpenseCategory(cat)));
+      await refresh();
+      setSelectedUnreg(new Set());
+      notify(
+        targets.length === 1
+          ? `"${targets[0]}" removed.`
+          : `${targets.length} categories removed.`
+      );
+      setPendingClear(null);
+    } catch (err) {
+      notify(getErrorMessage(err, "Could not remove category."), { type: "error" });
+    } finally {
+      setClearSubmitting(false);
     }
   };
 
@@ -242,11 +302,32 @@ export default function Categories() {
               {/* Unregistered — from expenses only */}
               {unregistered.length > 0 && (
                 <section>
-                  <div className="mb-2 flex items-center gap-2 px-1">
-                    <p className="text-xs font-semibold uppercase tracking-widest text-faint">
-                      From expenses ({unregistered.length})
-                    </p>
-                    <Sparkles size={11} strokeWidth={1.8} className="text-faint" />
+                  <div className="mb-2 flex items-center justify-between gap-2 px-1">
+                    <div className="flex items-center gap-2">
+                      <p className="text-xs font-semibold uppercase tracking-widest text-faint">
+                        From expenses ({unregistered.length})
+                      </p>
+                      <Sparkles size={11} strokeWidth={1.8} className="text-faint" />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {selectedUnreg.size > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => setPendingClear("bulk")}
+                          className="flex items-center gap-1.5 rounded-2xl bg-danger px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-danger/90"
+                        >
+                          <Trash2 size={12} strokeWidth={2} />
+                          Remove {selectedUnreg.size}
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={toggleAllUnreg}
+                        className="text-xs text-muted transition-colors hover:text-primary"
+                      >
+                        {selectedUnreg.size === unregistered.length ? "Deselect all" : "Select all"}
+                      </button>
+                    </div>
                   </div>
                   <p className="mb-3 px-1 text-xs text-muted">
                     These categories were created by the agent. Register them to assign an icon and colour.
@@ -257,6 +338,9 @@ export default function Categories() {
                         key={entry.category}
                         entry={entry}
                         onRegister={handleRegister}
+                        onDelete={(name) => setPendingClear(name)}
+                        selected={selectedUnreg.has(entry.category)}
+                        onSelect={toggleUnreg}
                       />
                     ))}
                   </div>
@@ -276,6 +360,20 @@ export default function Categories() {
         loading={deleteSubmitting}
         onCancel={() => setPendingDelete(null)}
         onConfirm={handleConfirmDelete}
+      />
+
+      <ConfirmDialog
+        open={Boolean(pendingClear)}
+        title={
+          pendingClear === "bulk"
+            ? `Remove ${selectedUnreg.size} categories?`
+            : `Remove "${pendingClear}"?`
+        }
+        description="Expenses are kept — only the category label is cleared. They will appear as uncategorized."
+        confirmLabel="Remove"
+        loading={clearSubmitting}
+        onCancel={() => setPendingClear(null)}
+        onConfirm={handleConfirmClear}
       />
     </div>
   );

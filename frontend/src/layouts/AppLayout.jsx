@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import {
   NavLink,
   Outlet,
@@ -23,12 +23,15 @@ import {
   ShieldCheck,
   Sparkles,
   Menu,
+  Pencil,
+  Check,
 } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
 import { useTour, hasTourBeenSeen } from "../context/TourContext";
 import {
   listConversations,
+  renameConversation,
   deleteConversation,
 } from "../api/conversations";
 import { getOrCreateThreadId } from "../utils/thread";
@@ -128,13 +131,55 @@ function SidebarButton({
   );
 }
 
-function RecentItem({
-  conversation,
-  collapsed,
-  onClick,
-  onDelete,
-}) {
+function RecentItem({ conversation, collapsed, onClick, onDelete, onRename }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(conversation.title);
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    if (editing) inputRef.current?.select();
+  }, [editing]);
+
+  const startEdit = (e) => {
+    e.stopPropagation();
+    setDraft(conversation.title);
+    setEditing(true);
+  };
+
+  const commitEdit = () => {
+    const trimmed = draft.trim();
+    if (trimmed && trimmed !== conversation.title) onRename(conversation, trimmed);
+    setEditing(false);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") commitEdit();
+    if (e.key === "Escape") setEditing(false);
+  };
+
   if (collapsed) return null;
+
+  if (editing) {
+    return (
+      <div className="flex w-full items-center gap-1.5 rounded-2xl px-3 py-1.5">
+        <input
+          ref={inputRef}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onBlur={commitEdit}
+          className="min-w-0 flex-1 rounded-lg bg-surface-hover px-2 py-1 text-sm text-primary outline-none ring-1 ring-focus"
+        />
+        <button
+          type="button"
+          onMouseDown={(e) => { e.preventDefault(); commitEdit(); }}
+          className="shrink-0 rounded-md p-1 text-accent hover:bg-accent-subtle"
+        >
+          <Check size={14} strokeWidth={2} />
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="group flex w-full items-center gap-2 rounded-2xl px-3 py-2 text-sm text-secondary transition-colors hover:bg-surface-hover hover:text-primary">
@@ -144,23 +189,27 @@ function RecentItem({
         className="flex min-w-0 flex-1 items-center gap-2 text-left"
       >
         <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-faint transition-colors group-hover:bg-accent" />
-
-        <span className="truncate">
-          {conversation.title}
-        </span>
+        <span className="truncate">{conversation.title}</span>
       </button>
 
-      <button
-        type="button"
-        onClick={(event) => {
-          event.stopPropagation();
-          onDelete(conversation);
-        }}
-        title="Delete conversation"
-        className="shrink-0 rounded-md p-1 text-faint opacity-0 transition-all hover:bg-danger-subtle hover:text-danger group-hover:opacity-100"
-      >
-        ×
-      </button>
+      <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+        <button
+          type="button"
+          onClick={startEdit}
+          title="Rename"
+          className="rounded-md p-1 text-faint hover:bg-surface-hover hover:text-primary"
+        >
+          <Pencil size={12} strokeWidth={1.9} />
+        </button>
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); onDelete(conversation); }}
+          title="Delete"
+          className="rounded-md p-1 text-faint hover:bg-danger-subtle hover:text-danger"
+        >
+          ×
+        </button>
+      </div>
     </div>
   );
 }
@@ -530,6 +579,19 @@ export default function AppLayout() {
     );
   };
 
+  const handleRenameConversation = useCallback(async (conversation, newTitle) => {
+    try {
+      await renameConversation(conversation.thread_id, newTitle);
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.thread_id === conversation.thread_id ? { ...c, title: newTitle } : c
+        )
+      );
+    } catch {
+      alert("Could not rename conversation.");
+    }
+  }, []);
+
   const handleDeleteConversation = async (
     conversation
   ) => {
@@ -754,6 +816,7 @@ export default function AppLayout() {
                       collapsed={false}
                       onClick={() => openConversation(conversation)}
                       onDelete={handleDeleteConversation}
+                      onRename={handleRenameConversation}
                     />
                   ))}
                 </div>

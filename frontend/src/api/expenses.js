@@ -20,6 +20,12 @@ export function deleteExpense(expenseId) {
     .then((res) => res.data);
 }
 
+export function clearExpenseCategory(category) {
+  return apiClient
+    .delete("/expenses/by-category", { params: { category } })
+    .then((res) => res.data);
+}
+
 export function getExpenseBreakdown(params = {}) {
   return apiClient
     .get("/expenses/breakdown", { params })

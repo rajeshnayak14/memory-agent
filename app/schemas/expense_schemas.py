@@ -8,7 +8,7 @@ class ExpenseResponse(BaseModel):
     thread_id: str
     amount: float
     currency: str
-    category: str
+    category: str | None
     description: str
     expense_date: datetime
     created_at: datetime

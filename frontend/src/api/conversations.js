@@ -12,6 +12,12 @@ export function getConversation(threadId) {
     .then((res) => res.data);
 }
 
+export function renameConversation(threadId, title) {
+  return apiClient
+    .patch(`/conversations/${encodeURIComponent(threadId)}`, { title })
+    .then((res) => res.data);
+}
+
 export function deleteConversation(threadId) {
   return apiClient
     .delete(`/conversations/${encodeURIComponent(threadId)}`)

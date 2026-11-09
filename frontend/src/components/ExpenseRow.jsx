@@ -10,8 +10,6 @@ export default function ExpenseRow({
   onUpdate,
   onDelete,
   updating,
-  selected,
-  onSelect,
 }) {
   const [editing, setEditing] = useState(false);
 
@@ -33,17 +31,7 @@ export default function ExpenseRow({
   }
 
   return (
-    <div className={`group flex items-start gap-3 border-b border-border px-4 py-4 transition-colors last:border-b-0 ${selected ? "bg-accent-subtle" : "bg-surface hover:bg-surface-hover"}`}>
-      {onSelect && (
-        <input
-          type="checkbox"
-          checked={selected}
-          onChange={() => onSelect(expense.id)}
-          aria-label="Select expense"
-          className="mt-1.5 h-4 w-4 shrink-0 cursor-pointer accent-accent"
-        />
-      )}
-
+    <div className="group flex items-start gap-3 border-b border-border bg-surface px-4 py-4 transition-colors last:border-b-0 hover:bg-surface-hover">
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-baseline gap-2">
           <p className="font-heading text-base font-bold text-primary">
