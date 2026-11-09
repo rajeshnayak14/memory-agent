@@ -69,6 +69,7 @@ def create_category(
             name=request.name,
             icon=request.icon,
             color=request.color,
+            keywords=request.keywords,
         )
 
         db.add(category)
@@ -117,6 +118,9 @@ def update_category(
 
         if request.color is not None:
             category.color = request.color
+
+        if request.keywords is not None:
+            category.keywords = request.keywords or None
 
         db.commit()
         db.refresh(category)

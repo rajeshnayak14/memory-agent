@@ -17,6 +17,7 @@ from app.tools.expense_tools import (
     manage_expense,
     manage_recurring_expense,
     manage_recurring_budget,
+    get_user_categories,
 )
 from app.tools.goal_tools import manage_goal
 
@@ -177,6 +178,16 @@ _BASE_PROMPT = """
     If no date is specified, use today.
 
     Expenses belong to the current conversation thread.
+
+    CATEGORY RULE — CRITICAL:
+
+    Before categorizing any expense, call get_user_categories to
+    see the user's registered categories and their keywords. Use
+    the most fitting registered category name instead of inventing
+    a new one. If "Grocery" exists and the user mentions fruits,
+    vegetables, or supermarket items, use "Grocery" — do NOT create
+    separate categories for each item. Only use a new category name
+    when nothing registered fits at all.
 
     When the user asks about spending, ALWAYS use the
     expense tools.
@@ -513,6 +524,7 @@ agent = create_react_agent(
         get_expenses,
         get_expense_breakdown,
         get_expense_daily_breakdown,
+        get_user_categories,
         budget_manager,
         manage_expense,
         manage_recurring_expense,

@@ -54,6 +54,7 @@ export default function CategoryEditor({
   const [name, setName] = useState(initial.name ?? "");
   const [icon, setIcon] = useState(initial.icon ?? "Tag");
   const [color, setColor] = useState(initial.color ?? SWATCHES[0]);
+  const [keywords, setKeywords] = useState(initial.keywords ?? "");
   const [error, setError] = useState("");
 
   const handleSave = () => {
@@ -65,7 +66,7 @@ export default function CategoryEditor({
     }
 
     setError("");
-    onSave({ name: trimmed, icon, color });
+    onSave({ name: trimmed, icon, color, keywords: keywords.trim() || null });
   };
 
   return (
@@ -77,6 +78,17 @@ export default function CategoryEditor({
         placeholder="Category name"
         className={inputClass}
       />
+
+      <input
+        type="text"
+        value={keywords}
+        onChange={(e) => setKeywords(e.target.value)}
+        placeholder="Keywords (e.g. fruits, vegetables, supermarket)"
+        className={`${inputClass} mt-2`}
+      />
+      <p className="mt-1 px-1 text-[11px] text-faint">
+        Comma-separated terms the agent should map to this category
+      </p>
 
       <div className="mt-3">
         <p className="mb-1.5 text-xs font-medium text-muted">Icon</p>

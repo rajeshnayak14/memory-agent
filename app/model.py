@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import Boolean, DateTime, String, ForeignKey, Float
+from sqlalchemy import Boolean, DateTime, String, Text, ForeignKey, Float
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base
@@ -443,6 +443,13 @@ class Category(Base):
         default="#1f4d3b",
         server_default="#1f4d3b",
         nullable=False,
+    )
+
+    # Comma-separated list of terms/aliases that belong to this category.
+    # The agent uses these to map expense descriptions to canonical categories.
+    keywords: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
     )
 
     created_at: Mapped[datetime] = mapped_column(

@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.currency import format_money, normalize_currency
 from app.database import SessionLocal
-from app.model import Budget, Expense, RecurringBudget, RecurringExpense, User
+from app.model import Budget, Category, Expense, RecurringBudget, RecurringExpense, User
 
 
 # ============================================================
@@ -228,6 +228,80 @@ def build_expense_query(
 
 
 # ============================================================
+# CATEGORY HELPERS
+# ============================================================
+
+def _resolve_category(db: Session, user_id: int, category: str) -> str:
+    """Map the agent's category string to a registered category's canonical name.
+
+    Matching priority:
+    1. Exact name match (case-insensitive)
+    2. Keyword match — the agent's string appears in a category's keywords
+    3. The category name is a substring of the agent's string (or vice versa)
+    4. Fall back to the agent's original string unchanged.
+    """
+    cats = db.query(Category).filter(Category.user_id == user_id).all()
+    if not cats:
+        return category
+
+    needle = category.strip().lower()
+
+    # Pass 1: exact name match
+    for cat in cats:
+        if cat.name.strip().lower() == needle:
+            return cat.name
+
+    # Pass 2: keyword match
+    for cat in cats:
+        if not cat.keywords:
+            continue
+        for kw in cat.keywords.split(","):
+            if kw.strip().lower() == needle:
+                return cat.name
+
+    # Pass 3: substring containment
+    for cat in cats:
+        name_lower = cat.name.strip().lower()
+        if needle in name_lower or name_lower in needle:
+            return cat.name
+
+    return category
+
+
+@tool
+def get_user_categories() -> str:
+    """Return the user's registered expense categories with their keywords.
+
+    Call this before categorizing a new expense when you are unsure which
+    of the user's existing categories best fits the item. Use the returned
+    names and keywords to pick the right category instead of inventing a
+    new one.
+    """
+    user_id, _ = get_current_thread()
+    if not user_id:
+        return "Unable to determine the current user."
+
+    db = SessionLocal()
+    try:
+        cats = (
+            db.query(Category)
+            .filter(Category.user_id == int(user_id))
+            .order_by(Category.name.asc())
+            .all()
+        )
+        if not cats:
+            return "No categories registered yet."
+
+        lines = []
+        for cat in cats:
+            kw_part = f" (keywords: {cat.keywords})" if cat.keywords else ""
+            lines.append(f"- {cat.name}{kw_part}")
+        return "Registered categories:\n" + "\n".join(lines)
+    finally:
+        db.close()
+
+
+# ============================================================
 # ADD EXPENSE
 # ============================================================
 
@@ -281,12 +355,13 @@ def add_expense(
         resolved_currency = normalize_currency(
             currency, get_user_currency(db, user_id_int)
         )
+        resolved_category = _resolve_category(db, user_id_int, category)
 
         expense = Expense(
             user_id=user_id_int,
             thread_id=thread_id,
             amount=float(amount),
-            category=category,
+            category=resolved_category,
             description=description,
             currency=resolved_currency,
             expense_date=to_datetime_start(expense_date),
