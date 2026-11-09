@@ -22,6 +22,10 @@ Thumbs.db
 # One-off source asset (derived logo.png/favicon.png are what the app
 # actually uses, already in frontend/public/) — not needed in the repo.
 /image.png
+/image1.png
+
+# Server log files (generated at runtime, not for version control)
+*.log
 
 # Stray lockfile with no matching root package.json — the real frontend
 # lockfile lives in frontend/package-lock.json.

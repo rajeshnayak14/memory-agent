@@ -76,22 +76,30 @@ def chat(
 
     materialize_due_recurrences(db, int(user_id))
 
-    response = agent.invoke(
-        {
-            "messages": [
-                {
-                    "role": "user",
-                    "content": request.message,
+    try:
+        response = agent.invoke(
+            {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": request.message,
+                    }
+                ]
+            },
+            config={
+                "configurable": {
+                    "user_id": user_id,
+                    "thread_id": request.thread_id,
                 }
-            ]
-        },
-        config={
-            "configurable": {
-                "user_id": user_id,
-                "thread_id": request.thread_id,
-            }
-        },
-    )
+            },
+        )
+    except Exception:
+        logger.exception(
+            "Agent.invoke failed: user_id=%s thread_id=%s",
+            user_id,
+            request.thread_id,
+        )
+        raise
 
     turns = segment_into_turns(response["messages"])
     current_turn = turns[-1] if turns else []

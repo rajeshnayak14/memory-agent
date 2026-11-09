@@ -37,9 +37,7 @@ export default function ChatMessageRow({ message, onRetry, onEditSubmit, onMemor
     if (!trimmed) return;
 
     setIsEditing(false);
-    if (trimmed !== message.content) {
-      onEditSubmit(message, trimmed);
-    }
+    onEditSubmit(message, trimmed);
   };
 
   // Whenever a structured card is attached, the model's own text is just

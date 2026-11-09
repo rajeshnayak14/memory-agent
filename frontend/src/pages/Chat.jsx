@@ -455,8 +455,8 @@ export default function Chat() {
   const handleEditSubmit = (message, newContent) => {
     if (sending || loadingHistory) return;
 
-    const index = messages.findIndex((m) => m.id === message.id);
-    if (index === -1) return;
+    // Guard: message must exist in current state before we do anything.
+    if (!messages.some((m) => m.id === message.id)) return;
 
     const editedMessage = {
       ...message,
@@ -464,10 +464,15 @@ export default function Chat() {
       status: "sending",
     };
 
-    setMessages((prev) => [
-      ...prev.slice(0, index),
-      editedMessage,
-    ]);
+    // Re-find the index inside the functional updater so the slice always
+    // uses the actual latest state, not a potentially stale closure value.
+    // Everything from the edited position onwards is dropped so the new
+    // assistant reply replaces the old one rather than appending after it.
+    setMessages((prev) => {
+      const idx = prev.findIndex((m) => m.id === message.id);
+      if (idx === -1) return prev;
+      return [...prev.slice(0, idx), editedMessage];
+    });
 
     deliver(editedMessage);
   };
